@@ -13,5 +13,16 @@ def test_func(param_a: int, param_b: int):
     pass
 
 
+@auto_cli
+def fail_func(param_a: int, param_b: int):
+    """
+    Some fancy doctstring describing the function.
+    :param param_a: The first parameter passed to the function.
+    :return: Nothing
+    """
+    pass
+
+
 if __name__ == '__main__':
     test_func(1, 2)
+    fail_func(1, 2)
