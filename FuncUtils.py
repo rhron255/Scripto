@@ -28,7 +28,6 @@ def get_parameters(func: FunctionType) -> List[Dict]:
     signature = inspect.signature(func)
     docstring = inspect.getdoc(func)
     for param in signature.parameters.values():
-        print(param)
         result = re.compile(f':param {param.name}:\s*(?P<desc>.*)\s*:param').search(
             docstring.replace('\n', ''))
         if result is None:
