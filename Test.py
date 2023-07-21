@@ -1,15 +1,14 @@
 # A test document with function stubs to test
-from AutoCLI import auto_cli, AutoCli
+from AutoCLI import AutoCli
 
-app = AutoCli("Test")
+script = AutoCli("Test")
 
 
-@auto_cli()
-def test_func(param_a: int, param_b: int):
+@script.auto_cli()
+def test_func(param_a: int, param_b):
     """
     Some fancy doctstring describing the function.
     :param param_a: The first parameter passed to the function.
-    :param param_b: The second parameter passed to the function.
     :return: Nothing
     """
     pass
@@ -25,15 +24,15 @@ def fail_func(param_a: int, param_b: int):
     pass
 
 
-@auto_cli()
-def bool_func(b: bool):
+@script.auto_cli()
+def bool_func(super_long_parameter_name):
     """
     Funky
-    :param b: does stuff
+    :param super_long_parameter_name: does stuff
     :return: Nope
     """
-    print("success" if b else "failure")
+    print("success" if super_long_parameter_name else "failure")
 
 
 if __name__ == '__main__':
-    app.run()
+    script.run()
