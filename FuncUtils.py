@@ -76,7 +76,7 @@ def generate_action_settings(func: FunctionType):
     for param in parameters:
         settings = dict(type=param['type'], help=param['description'])
         if param['type'] is bool:
-            param['name'] = f'--{param["name"]}'
+            param['name'] = f'--{make_kebab_case(param["name"])}'
             settings['action'] = 'store_true'
             settings.pop('type')
         yield param['name'], settings
@@ -99,7 +99,7 @@ def validate_parameters_in_docstring(func: FunctionType, supress_warnings=False)
             if result is None:
                 warnings.warn(
                     f'Documentation not sufficient to parse description for parameter: "{param.name}" in function: "{func.__name__}".',
-                    stacklevel=4)
+                    stacklevel=3)
         if param.annotation is inspect.Parameter.empty:
             return TypeError(
                 f'No type annotation found for parameter: "{param.name}" in function: "{func.__name__}".')

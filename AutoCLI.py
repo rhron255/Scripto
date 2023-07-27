@@ -28,8 +28,13 @@ class AutoCli:
                 sub_parser = sub.add_parser(name, **settings)
                 for name, settings in generate_action_settings(func):
                     sub_parser.add_argument(name, **settings)
+                sub_parser.set_defaults(func=func)
+            # Parsing the arguments passed to the program.
             args = parent_parser.parse_args()
-            args.func(args)
+            # Popping the function used out of the arguments passed to the function.
+            func_args = {**vars(args)}
+            func_args.pop('func')
+            args.func(**func_args)
 
     def auto_cli(self, *config_args, **config_kwargs):
         def registration_function(func: FunctionType):
