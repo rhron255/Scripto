@@ -86,6 +86,7 @@ def generate_action_settings(func: FunctionType):
             param['name'] = f'--{make_kebab_case(param["name"])}'
             settings['default'] = param['default']
             settings['required'] = False
+            settings['help'] += f' Defaults to {param["default"]} if not provided.'
         yield param['name'], settings
 
 
