@@ -5,13 +5,13 @@ script = AutoCli("Test")
 
 
 @script.auto_cli()
-def test_func(param_a: int, param_b):
+def test_func(param_a: int = 5, param_b: int = 5):
     """
     Some fancy doctstring describing the function.
     :param param_a: The first parameter passed to the function.
     :return: Nothing
     """
-    pass
+    print(param_a + param_b)
 
 
 # @auto_cli
@@ -25,7 +25,7 @@ def fail_func(param_a: int, param_b: int):
 
 
 @script.auto_cli()
-def bool_func(super_long_parameter_name):
+def bool_func(super_long_parameter_name: bool):
     """
     Funky
     :param super_long_parameter_name: does stuff

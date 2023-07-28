@@ -34,11 +34,14 @@ def get_parameters(func: FunctionType) -> List[Dict]:
         if result is None:
             result = re.compile(f':param {param.name}:\s*(?P<desc>.*)\s*:return').search(
                 docstring.replace('\n', ''))
-        yield {
+        parameter = {
             'name': param.name,
             'type': param.annotation,
             'description': result.groupdict()['desc'] if result is not None else ''
         }
+        if param.default is not inspect.Parameter.empty:
+            parameter['default'] = param.default
+        yield parameter
 
 
 def make_kebab_case(string: str) -> str:
@@ -79,6 +82,10 @@ def generate_action_settings(func: FunctionType):
             param['name'] = f'--{make_kebab_case(param["name"])}'
             settings['action'] = 'store_true'
             settings.pop('type')
+        if 'default' in param:
+            param['name'] = f'--{make_kebab_case(param["name"])}'
+            settings['default'] = param['default']
+            settings['required'] = False
         yield param['name'], settings
 
 
