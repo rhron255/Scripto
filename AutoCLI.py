@@ -21,13 +21,16 @@ class AutoCli:
             function = self._functions[0]
             function(**vars(generate_parser(function).parse_args()))
         else:
-            parent_parser = argparse.ArgumentParser(description=self._description)
+            parent_parser = argparse.ArgumentParser(description=self._description, conflict_handler='resolve')
             sub = parent_parser.add_subparsers(required=True)
             for func in self._functions:
                 name, settings = generate_parser_definitions(func)
-                sub_parser = sub.add_parser(name, **settings)
+                sub_parser = sub.add_parser(name, **settings, conflict_handler='resolve')
                 for name, settings in generate_action_settings(func):
-                    sub_parser.add_argument(name, **settings)
+                    if type(name) is list:
+                        sub_parser.add_argument(*name, **settings)
+                    else:
+                        sub_parser.add_argument(name, **settings)
                 sub_parser.set_defaults(func=func)
             # Parsing the arguments passed to the program.
             args = parent_parser.parse_args()

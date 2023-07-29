@@ -79,13 +79,18 @@ def generate_action_settings(func: FunctionType):
     for param in parameters:
         settings = dict(type=param['type'], help=param['description'])
         if param['type'] is bool:
-            param['name'] = f'--{make_kebab_case(param["name"])}'
+            name = param['name']
+            param['name'] = []
+            param['name'].append(f'--{make_kebab_case(name)}')
+            param['name'].append(f'-{name[0]}')
             settings['action'] = 'store_true'
             settings.pop('type')
         if 'default' in param:
-            param['name'] = f'--{make_kebab_case(param["name"])}'
+            name = param['name']
+            param['name'] = []
+            param['name'].append(f'--{make_kebab_case(name)}')
+            param['name'].append(f'-{name[0]}')
             settings['default'] = param['default']
-            settings['required'] = False
             settings['help'] += f' Defaults to {param["default"]} if not provided.'
         yield param['name'], settings
 
