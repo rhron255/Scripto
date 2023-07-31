@@ -109,7 +109,7 @@ def validate_parameters_in_docstring(func: FunctionType, supress_warnings=False)
         if result is None:
             result = re.compile(f':param {param.name}:\s*(?P<desc>.*)\s*:return').search(
                 docstring.replace('\n', ''))
-            if result is None:
+            if result is None and not supress_warnings:
                 warnings.warn(
                     f'Documentation not sufficient to parse description for parameter: "{param.name}" in function: "{func.__name__}".',
                     stacklevel=3)

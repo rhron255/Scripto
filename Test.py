@@ -1,13 +1,15 @@
 # A test document with function stubs to test
 from AutoCLI import AutoCli
 
-script = AutoCli("Test")
+script = AutoCli("Test",
+                 suppress_warnings=True,
+                 auto_log=True)
 
 
 @script.auto_cli()
-def test_func(param_a: int = 5, param_b: int = 5):
+def test_func(param_a: int, param_b: int = 5):
     """
-    Some fancy doctstring describing the function.
+    Some fancy docstring describing the function.
     :param param_a: The first parameter passed to the function.
     :return: Nothing
     """
