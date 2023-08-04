@@ -4,8 +4,7 @@ import logging
 from types import FunctionType
 from typing import List
 
-from FuncUtils import generate_parser, generate_parser_definitions, generate_action_settings, \
-    validate_parameters_in_docstring
+from FuncUtils import generate_action_settings, validate_parameters_in_docstring
 
 
 def add_logging_flags(parser):
@@ -32,34 +31,38 @@ class AutoCli:
         self._use_logger = auto_log
 
     def run(self):
+        parser = argparse.ArgumentParser(description=self._description, conflict_handler='resolve')
         if len(self._functions) == 0:
             raise ValueError('No functions registered...')
         elif len(self._functions) == 1:
             function = self._functions[0]
-            function(**vars(generate_parser(function).parse_args()))
+            self.add_function_to_parser(function, parser)
         else:
-            parent_parser = argparse.ArgumentParser(description=self._description, conflict_handler='resolve')
-            sub = parent_parser.add_subparsers(required=True)
+            sub = parser.add_subparsers(required=True)
             for func in self._functions:
                 name, settings = generate_parser_definitions(func)
                 sub_parser = sub.add_parser(name, **settings, conflict_handler='resolve')
-                for name, settings in generate_action_settings(func):
-                    if type(name) is list:
-                        sub_parser.add_argument(*name, **settings)
-                    else:
-                        sub_parser.add_argument(name, **settings)
-                sub_parser.set_defaults(func=func)
-                if self._use_logger:
-                    add_logging_flags(sub_parser)
-            # Parsing the arguments passed to the program.
-            args = parent_parser.parse_args()
-            # Popping the function used out of the arguments passed to the function.
-            func_args = {**vars(args)}
-            func_args.pop('func')
-            if self._use_logger:
-                logging.basicConfig(level=func_args['log_level'])
-                func_args.pop('log_level')
-            args.func(**func_args)
+                self.add_function_to_parser(func, sub_parser)
+
+        # Parsing the arguments passed to the program.
+        args = parser.parse_args()
+        # Popping the function used out of the arguments passed to the function.
+        func_args = {**vars(args)}
+        func_args.pop('func')
+        if self._use_logger:
+            logging.basicConfig(level=func_args['log_level'])
+            func_args.pop('log_level')
+        args.func(**func_args)
+
+    def add_function_to_parser(self, func, parser):
+        for name, settings in generate_action_settings(func):
+            if type(name) is list:
+                parser.add_argument(*name, **settings)
+            else:
+                parser.add_argument(name, **settings)
+        if self._use_logger:
+            add_logging_flags(parser)
+        parser.set_defaults(func=func)
 
     def auto_cli(self, *config_args, **config_kwargs):
         def registration_function(func: FunctionType):
