@@ -64,13 +64,16 @@ class AutoCli:
             if target_name in self._arg_initializers[func.__name__]:
                 argument_values = self._arg_initializers[func.__name__][target_name]
                 if type(argument_values) is dict:
+                    should_be_required = True
+                    if 'default' in settings and settings['default'] not in argument_values.values():
+                        should_be_required = False
+                        parser.set_defaults(**{f'{target_name}': settings['default']})
+                        argument_values[target_name] = settings['default']
+                    mutex_group = parser.add_mutually_exclusive_group(required=should_be_required)
                     for value in argument_values.items():
-                        parser.add_argument(f'--{value[0]}', dest=target_name, action='store_const', const=value[1],
-                                            help=f'Sets {target_name} to  {value[1]}')
-                        if 'default' in settings and settings['default'] not in argument_values.values():
-                            parser.add_argument(f'--{make_kebab_case(target_name)}', action='store_const',
-                                                const=settings['default'],
-                                                help=f'Sets {target_name} to {settings["default"]}')
+                        mutex_group.add_argument(f'--{make_kebab_case(value[0])}', dest=target_name,
+                                                 action='store_const', const=value[1],
+                                                 help=f'Sets {target_name} to {value[1]}')
                 elif type(argument_values) is list:
                     if 'default' in settings and settings['default'] not in argument_values:
                         argument_values.append(settings['default'])
