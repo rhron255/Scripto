@@ -6,8 +6,10 @@ script = AutoCli("Test",
                  auto_log=True)
 
 
-@script.auto_cli()
-def test_func(param_a: int, param_b: int = 5):
+@script.auto_cli(
+    param_a={'a': 1, 'aa': 2, 'aaa': 3},
+    param_b=[1, 2, 3])
+def test_func(param_a: int = 0, param_b: int = 5):
     """
     Some fancy docstring describing the function.
     :param param_a: The first parameter passed to the function.

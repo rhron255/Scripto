@@ -4,7 +4,8 @@ import logging
 from types import FunctionType
 from typing import List
 
-from FuncUtils import generate_action_settings, validate_parameters_in_docstring
+from FuncUtils import generate_action_settings, validate_parameters_in_docstring, generate_parser_definitions, \
+    get_argument_names, make_kebab_case
 
 
 def add_logging_flags(parser):
@@ -23,6 +24,7 @@ class AutoCli:
     _description: str
     _silence: bool
     _functions: List[FunctionType] = []
+    _arg_initializers = {}
     _use_logger = False
 
     def __init__(self, description, suppress_warnings=False, auto_log=False):
@@ -56,10 +58,31 @@ class AutoCli:
 
     def add_function_to_parser(self, func, parser):
         for name, settings in generate_action_settings(func):
+            target_name = name
             if type(name) is list:
-                parser.add_argument(*name, **settings)
+                target_name = name[0][2:].replace('-', '_')
+            if target_name in self._arg_initializers[func.__name__]:
+                argument_values = self._arg_initializers[func.__name__][target_name]
+                if type(argument_values) is dict:
+                    for value in argument_values.items():
+                        parser.add_argument(f'--{value[0]}', dest=target_name, action='store_const', const=value[1],
+                                            help=f'Sets {target_name} to  {value[1]}')
+                        if 'default' in settings and settings['default'] not in argument_values.values():
+                            parser.add_argument(f'--{make_kebab_case(target_name)}', action='store_const',
+                                                const=settings['default'],
+                                                help=f'Sets {target_name} to {settings["default"]}')
+                elif type(argument_values) is list:
+                    if 'default' in settings and settings['default'] not in argument_values:
+                        argument_values.append(settings['default'])
+                    if type(name) is list:
+                        parser.add_argument(*name, **settings, choices=argument_values)
+                    else:
+                        parser.add_argument(name, **settings, choices=argument_values)
             else:
-                parser.add_argument(name, **settings)
+                if type(name) is list:
+                    parser.add_argument(*name, **settings)
+                else:
+                    parser.add_argument(name, **settings)
         if self._use_logger:
             add_logging_flags(parser)
         parser.set_defaults(func=func)
@@ -74,6 +97,9 @@ class AutoCli:
             if parameter_validation_exception is not None:
                 raise parameter_validation_exception
             self._functions.append(func)
+            self._arg_initializers[func.__name__] = dict(config_arg for config_arg in
+                                                         config_kwargs.items() if
+                                                         config_arg[0] in get_argument_names(func))
             return wrapper
 
         return registration_function

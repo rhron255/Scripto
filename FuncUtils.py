@@ -94,3 +94,7 @@ def validate_parameters_in_docstring(func: FunctionType, supress_warnings=False)
         if param.annotation is inspect.Parameter.empty:
             return TypeError(
                 f'No type annotation found for parameter: "{param.name}" in function: "{func.__name__}".')
+
+
+def get_argument_names(func: FunctionType) -> List[str]:
+    return [key for key in inspect.signature(func).parameters.keys()]
