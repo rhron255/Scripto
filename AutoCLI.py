@@ -33,17 +33,19 @@ class AutoCli:
         self._use_logger = auto_log
 
     def run(self):
-        parser = argparse.ArgumentParser(description=self._description, conflict_handler='resolve')
+        parser = argparse.ArgumentParser(description=self._description, conflict_handler='resolve',
+                                         formatter_class=argparse.RawDescriptionHelpFormatter)
         if len(self._functions) == 0:
             raise ValueError('No functions registered...')
-        elif len(self._functions) == 1:
+        if len(self._functions) == 1:
             function = self._functions[0]
             self.add_function_to_parser(function, parser)
         else:
             sub = parser.add_subparsers(required=True)
             for func in self._functions:
                 name, settings = generate_parser_definitions(func)
-                sub_parser = sub.add_parser(name, **settings, conflict_handler='resolve')
+                sub_parser = sub.add_parser(name, **settings, conflict_handler='resolve',
+                                            formatter_class=argparse.RawDescriptionHelpFormatter)
                 self.add_function_to_parser(func, sub_parser)
 
         # Parsing the arguments passed to the program.
@@ -64,6 +66,7 @@ class AutoCli:
             if target_name in self._arg_initializers[func.__name__]:
                 argument_values = self._arg_initializers[func.__name__][target_name]
                 if type(argument_values) is dict:
+                    parser.description += f'\n\t{target_name} - {settings["help"]}'
                     should_be_required = True
                     if 'default' in settings and settings['default'] not in argument_values.values():
                         should_be_required = False
@@ -71,16 +74,16 @@ class AutoCli:
                         argument_values[target_name] = settings['default']
                     mutex_group = parser.add_mutually_exclusive_group(required=should_be_required)
                     for value in argument_values.items():
-                        mutex_group.add_argument(f'--{make_kebab_case(value[0])}', dest=target_name,
-                                                 action='store_const', const=value[1],
+                        mutex_group.add_argument(f'--{make_kebab_case(value[0])}', f'-{make_kebab_case(value[0])[0]}',
+                                                 dest=target_name, action='store_const', const=value[1],
                                                  help=f'Sets {target_name} to {value[1]}')
                 elif type(argument_values) is list:
                     if 'default' in settings and settings['default'] not in argument_values:
                         argument_values.append(settings['default'])
                     if type(name) is list:
-                        parser.add_argument(*name, **settings, choices=argument_values)
+                        parser.add_argument(*name, **settings, choices=sorted(argument_values))
                     else:
-                        parser.add_argument(name, **settings, choices=argument_values)
+                        parser.add_argument(name, **settings, choices=sorted(argument_values))
             else:
                 if type(name) is list:
                     parser.add_argument(*name, **settings)
