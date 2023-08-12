@@ -4,7 +4,7 @@ import logging
 from types import FunctionType
 from typing import List
 
-from FuncUtils import generate_action_settings, validate_parameters_in_docstring, generate_parser_definitions, \
+from AutoScript.FuncUtils import generate_action_settings, validate_parameters_in_docstring, generate_parser_definitions, \
     get_argument_names, make_kebab_case
 
 
@@ -20,7 +20,7 @@ def add_logging_flags(parser):
                            help='Set log level to info')
 
 
-class AutoCli:
+class AutoScript:
     _description: str
     _silence: bool
     _functions: List[FunctionType] = []
@@ -93,7 +93,7 @@ class AutoCli:
             add_logging_flags(parser)
         parser.set_defaults(func=func)
 
-    def auto_cli(self, *config_args, **config_kwargs):
+    def register(self, *config_args, **config_kwargs):
         def registration_function(func: FunctionType):
             @functools.wraps(func)
             def wrapper(*args, **kwargs):

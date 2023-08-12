@@ -1,14 +1,12 @@
 # A test document with function stubs to test
-from AutoCLI import AutoCli
+from AutoScript.AutoScript import AutoScript
 
-script = AutoCli("Test",
-                 suppress_warnings=True,
-                 auto_log=True)
+script = AutoScript("Test",
+                    suppress_warnings=True,
+                    auto_log=True)
 
 
-@script.auto_cli(
-    param_a={'a': 1, 'aa': 2, 'aaa': 3},
-    param_b=[1, 2, 3])
+@script.register(param_a={'a': 1, 'aa': 2, 'aaa': 3}, param_b=[1, 2, 3])
 def test_func(param_a: int = 0, param_b: int = 5):
     """
     Some fancy docstring describing the function.
@@ -28,7 +26,7 @@ def fail_func(param_a: int, param_b: int):
     pass
 
 
-@script.auto_cli()
+@script.register()
 def bool_func(super_long_parameter_name: bool):
     """
     Funky
