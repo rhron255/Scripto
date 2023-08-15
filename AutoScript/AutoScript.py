@@ -1,10 +1,13 @@
 import argparse
 import functools
 import logging
+import pathlib
+import sys
 from types import FunctionType
 from typing import List
 
-from AsciiArtUtils import print_intro
+from pyfiglet import figlet_format
+
 from FuncUtils import generate_action_settings, validate_parameters_in_docstring, generate_parser_definitions, \
     get_argument_names, make_kebab_case
 
@@ -19,6 +22,17 @@ def add_logging_flags(parser):
                            help='Set log level to warning')
     log_level.add_argument('--info', dest='log_level', action='store_const', const='info',
                            help='Set log level to info')
+
+
+def print_intro(description: str, script_name=pathlib.Path(sys.argv[0]).name[:-3]):
+    """
+    Prints an introduction to the script, mainly meant for interactive shells.
+    :param description: The description of the script.
+    :param script_name: The name of script, by default is taken from the name of the file.
+    :return:
+    """
+    print(figlet_format(script_name, font='slant'))
+    print(description)
 
 
 class AutoScript:
