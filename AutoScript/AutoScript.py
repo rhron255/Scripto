@@ -6,6 +6,7 @@ import sys
 from types import FunctionType
 from typing import List
 
+import rich
 from pyfiglet import figlet_format
 
 from FuncUtils import generate_action_settings, validate_parameters_in_docstring, generate_parser_definitions, \
@@ -24,14 +25,15 @@ def add_logging_flags(parser):
                            help='Set log level to info')
 
 
-def print_intro(description: str, script_name=pathlib.Path(sys.argv[0]).name[:-3]):
+def print_intro(description: str, script_name=pathlib.Path(sys.argv[0]).name[:-3], color='white'):
     """
     Prints an introduction to the script, mainly meant for interactive shells.
     :param description: The description of the script.
     :param script_name: The name of script, by default is taken from the name of the file.
+    :param color: Colors the title in the provided color name. See rich package for color options.
     :return:
     """
-    print(figlet_format(script_name, font='slant'))
+    rich.print(f'[{color}]{figlet_format(script_name, font="slant")}[/{color}]')
     print(description)
 
 
@@ -42,12 +44,15 @@ class AutoScript:
     _arg_initializers = {}
     _use_logger = False
     _enable_interactive_mode = False
+    _title_color = 'white'
 
-    def __init__(self, description, suppress_warnings=False, auto_log=False, enable_interactive_mode=False):
+    def __init__(self, description, suppress_warnings=False, auto_log=False, enable_interactive_mode=False,
+                 title_color='white'):
         self._description = description
         self._silence = suppress_warnings
         self._use_logger = auto_log
         self._enable_interactive_mode = enable_interactive_mode
+        self._title_color = title_color
 
     def run(self):
         parser = argparse.ArgumentParser(description=self._description, conflict_handler='resolve',
@@ -70,7 +75,7 @@ class AutoScript:
         # Parsing the arguments passed to the program.
         args = parser.parse_args()
         if args.interactive and 'func' not in args:
-            print_intro(self._description)
+            print_intro(self._description, color=self._title_color)
         #     TODO: Implement actual interactive mode!
         else:
             # Popping the function used out of the arguments passed to the function.

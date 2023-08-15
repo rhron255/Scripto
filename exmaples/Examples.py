@@ -4,7 +4,8 @@ from AutoScript.AutoScript import AutoScript
 script = AutoScript("Test",
                     suppress_warnings=True,
                     auto_log=True,
-                    enable_interactive_mode=True)
+                    enable_interactive_mode=True,
+                    title_color='bold green')
 
 
 @script.register(param_a={'a': 1, 'aa': 2, 'aaa': 3}, param_b=[1, 2, 3])
