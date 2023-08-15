@@ -4,7 +4,8 @@ import logging
 from types import FunctionType
 from typing import List
 
-from AutoScript.FuncUtils import generate_action_settings, validate_parameters_in_docstring, generate_parser_definitions, \
+from AsciiArtUtils import print_intro
+from FuncUtils import generate_action_settings, validate_parameters_in_docstring, generate_parser_definitions, \
     get_argument_names, make_kebab_case
 
 
@@ -26,22 +27,26 @@ class AutoScript:
     _functions: List[FunctionType] = []
     _arg_initializers = {}
     _use_logger = False
+    _enable_interactive_mode = False
 
-    def __init__(self, description, suppress_warnings=False, auto_log=False):
+    def __init__(self, description, suppress_warnings=False, auto_log=False, enable_interactive_mode=False):
         self._description = description
         self._silence = suppress_warnings
         self._use_logger = auto_log
+        self._enable_interactive_mode = enable_interactive_mode
 
     def run(self):
         parser = argparse.ArgumentParser(description=self._description, conflict_handler='resolve',
                                          formatter_class=argparse.RawDescriptionHelpFormatter)
+        parser.set_defaults(interactive=self._enable_interactive_mode)
+
         if len(self._functions) == 0:
             raise ValueError('No functions registered...')
         if len(self._functions) == 1:
             function = self._functions[0]
             self.add_function_to_parser(function, parser)
         else:
-            sub = parser.add_subparsers(required=True)
+            sub = parser.add_subparsers(required=not self._enable_interactive_mode)
             for func in self._functions:
                 name, settings = generate_parser_definitions(func)
                 sub_parser = sub.add_parser(name, **settings, conflict_handler='resolve',
@@ -50,13 +55,17 @@ class AutoScript:
 
         # Parsing the arguments passed to the program.
         args = parser.parse_args()
-        # Popping the function used out of the arguments passed to the function.
-        func_args = {**vars(args)}
-        func_args.pop('func')
-        if self._use_logger:
-            logging.basicConfig(level=func_args['log_level'])
-            func_args.pop('log_level')
-        args.func(**func_args)
+        if args.interactive and 'func' not in args:
+            print_intro(self._description)
+        #     TODO: Implement actual interactive mode!
+        else:
+            # Popping the function used out of the arguments passed to the function.
+            func_args = {**vars(args)}
+            func = func_args.pop('func')
+            func_args.pop('interactive')
+            if self._use_logger:
+                logging.basicConfig(level=func_args.pop('log_level'))
+            func(**func_args)
 
     def add_function_to_parser(self, func, parser):
         for name, settings in generate_action_settings(func):

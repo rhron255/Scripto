@@ -1,3 +1,6 @@
+import pathlib
+import sys
+
 LETTERS_DICT = {' ': (' ' * 12 + '\n') * 6, 'a': """
     ___    
    /   |   
@@ -279,4 +282,12 @@ def string_to_ascii_art(string: str) -> str:
     return ascii_art
 
 
-print(string_to_ascii_art('hello there 6'))
+def print_intro(description: str, script_name=pathlib.Path(sys.argv[0]).name[:-3]):
+    """
+    Prints an introduction to the script, mainly meant for interactive shells.
+    :param description: The description of the script.
+    :param script_name: The name of script, by default is taken from the name of the file.
+    :return:
+    """
+    print(string_to_ascii_art(script_name))
+    print(description)
