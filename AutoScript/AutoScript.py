@@ -59,18 +59,34 @@ class AutoScript:
 
         args = parser.parse_args()
         if args._interactive and '_func' not in args:
-            print_intro(self._description, color=self._title_color)
-            #     TODO: Implement actual interactive mode!
-            interactive_parser = self.build_parser(add_help=False)
+            print_intro(self._description + '\nEnter "help" for assistance, or "exit" to leave!',
+                        color=self._title_color)
+            interactive_parser = self.build_parser(add_epilog=False, add_help=False, exit_on_error=False)
             while (command := input('> ')) != 'exit':
-                if command == 'help':
-                    help_msg = interactive_parser.format_help()
-                    print('\n'.join(help_msg.splitlines()[1:]))
-                    continue
-                interactive_args = interactive_parser.parse_args(command.split())
-                self.run_args(interactive_args)
+                # TODO add a "set" command for setting in session variables! And something for showing / deleting them
+                if command == 'exit':
+                    exit(0)
+                elif command == 'help':
+                    print(self.prepare_help_msg(interactive_parser))
+                    print('You can enter "help" to show this message again, or "exit" to leave!')
+                elif command.split()[0] == 'help':
+                    target = command.split()[1]
+                    target_subparser = interactive_parser._subparsers._group_actions[0].choices[target]
+                    target_subparser.epilog = ''
+                    print(self.prepare_help_msg(target_subparser))
+                    print('You can enter "help" to show this message again, or "exit" to leave!')
+                else:
+                    interactive_args, invalid_options = interactive_parser.parse_known_args(command.split())
+                    if len(invalid_options) > 0:
+                        print(f'Invalid options provided:\n{",".join(invalid_options)}')
+                    else:
+                        self.run_args(interactive_args)
         else:
             self.run_args(args)
+
+    def prepare_help_msg(self, parser):
+        help_lines = parser.format_help().splitlines()[1:]
+        return '\n'.join([line for line in help_lines if not line.strip().startswith('-h, --help')])
 
     def run_args(self, args):
         # Popping the function used out of the arguments passed to the function.
@@ -81,9 +97,9 @@ class AutoScript:
             logging.basicConfig(level=func_args.pop('log_level'))
         func(**func_args)
 
-    def build_parser(self, *args, **kwargs):
+    def build_parser(self, *args, add_epilog=True, **parser_kwargs):
         parser = argparse.ArgumentParser(description=self._description, conflict_handler='resolve',
-                                         formatter_class=argparse.RawDescriptionHelpFormatter, **kwargs)
+                                         formatter_class=argparse.RawDescriptionHelpFormatter, **parser_kwargs)
         parser.set_defaults(_interactive=self._enable_interactive_mode)
         if len(self._functions) == 0:
             raise ValueError('No functions registered...')
@@ -93,9 +109,9 @@ class AutoScript:
         else:
             sub = parser.add_subparsers(required=not self._enable_interactive_mode)
             for func in self._functions:
-                name, settings = generate_parser_definitions(func)
+                name, settings = generate_parser_definitions(func, add_epilog=add_epilog)
                 sub_parser = sub.add_parser(name, **settings, conflict_handler='resolve',
-                                            formatter_class=argparse.RawDescriptionHelpFormatter)
+                                            formatter_class=argparse.RawDescriptionHelpFormatter, **parser_kwargs)
                 self.add_function_to_parser(func, sub_parser)
         return parser
 
