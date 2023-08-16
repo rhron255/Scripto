@@ -55,10 +55,36 @@ class AutoScript:
         self._title_color = title_color
 
     def run(self):
-        parser = argparse.ArgumentParser(description=self._description, conflict_handler='resolve',
-                                         formatter_class=argparse.RawDescriptionHelpFormatter)
-        parser.set_defaults(_interactive=self._enable_interactive_mode)
+        parser = self.build_parser()
 
+        args = parser.parse_args()
+        if args._interactive and '_func' not in args:
+            print_intro(self._description, color=self._title_color)
+            #     TODO: Implement actual interactive mode!
+            interactive_parser = self.build_parser(add_help=False)
+            while (command := input('> ')) != 'exit':
+                if command == 'help':
+                    help_msg = interactive_parser.format_help()
+                    print('\n'.join(help_msg.splitlines()[1:]))
+                    continue
+                interactive_args = interactive_parser.parse_args(command.split())
+                self.run_args(interactive_args)
+        else:
+            self.run_args(args)
+
+    def run_args(self, args):
+        # Popping the function used out of the arguments passed to the function.
+        func_args = {**vars(args)}
+        func = func_args.pop('_func')
+        func_args.pop('_interactive')
+        if self._use_logger:
+            logging.basicConfig(level=func_args.pop('log_level'))
+        func(**func_args)
+
+    def build_parser(self, *args, **kwargs):
+        parser = argparse.ArgumentParser(description=self._description, conflict_handler='resolve',
+                                         formatter_class=argparse.RawDescriptionHelpFormatter, **kwargs)
+        parser.set_defaults(_interactive=self._enable_interactive_mode)
         if len(self._functions) == 0:
             raise ValueError('No functions registered...')
         if len(self._functions) == 1:
@@ -71,20 +97,7 @@ class AutoScript:
                 sub_parser = sub.add_parser(name, **settings, conflict_handler='resolve',
                                             formatter_class=argparse.RawDescriptionHelpFormatter)
                 self.add_function_to_parser(func, sub_parser)
-
-        # Parsing the arguments passed to the program.
-        args = parser.parse_args()
-        if args._interactive and '_func' not in args:
-            print_intro(self._description, color=self._title_color)
-        #     TODO: Implement actual interactive mode!
-        else:
-            # Popping the function used out of the arguments passed to the function.
-            func_args = {**vars(args)}
-            func = func_args.pop('_func')
-            func_args.pop('_interactive')
-            if self._use_logger:
-                logging.basicConfig(level=func_args.pop('log_level'))
-            func(**func_args)
+        return parser
 
     def add_function_to_parser(self, func, parser):
         for name, settings in generate_action_settings(func):

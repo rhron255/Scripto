@@ -3,9 +3,9 @@ from AutoScript.AutoScript import AutoScript
 
 script = AutoScript("Test",
                     suppress_warnings=True,
-                    auto_log=True,
+                    auto_log=False,
                     enable_interactive_mode=True,
-                    title_color='bold green')
+                    title_color='red')
 
 
 @script.register(param_a={'a': 1, 'aa': 2, 'aaa': 3}, param_b=[1, 2, 3])
