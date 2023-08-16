@@ -57,7 +57,7 @@ class AutoScript:
     def run(self):
         parser = argparse.ArgumentParser(description=self._description, conflict_handler='resolve',
                                          formatter_class=argparse.RawDescriptionHelpFormatter)
-        parser.set_defaults(interactive=self._enable_interactive_mode)
+        parser.set_defaults(_interactive=self._enable_interactive_mode)
 
         if len(self._functions) == 0:
             raise ValueError('No functions registered...')
@@ -74,14 +74,14 @@ class AutoScript:
 
         # Parsing the arguments passed to the program.
         args = parser.parse_args()
-        if args.interactive and 'func' not in args:
+        if args._interactive and '_func' not in args:
             print_intro(self._description, color=self._title_color)
         #     TODO: Implement actual interactive mode!
         else:
             # Popping the function used out of the arguments passed to the function.
             func_args = {**vars(args)}
-            func = func_args.pop('func')
-            func_args.pop('interactive')
+            func = func_args.pop('_func')
+            func_args.pop('_interactive')
             if self._use_logger:
                 logging.basicConfig(level=func_args.pop('log_level'))
             func(**func_args)
@@ -119,7 +119,7 @@ class AutoScript:
                     parser.add_argument(name, **settings)
         if self._use_logger:
             add_logging_flags(parser)
-        parser.set_defaults(func=func)
+        parser.set_defaults(_func=func)
 
     def register(self, *config_args, **config_kwargs):
         def registration_function(func: FunctionType):
