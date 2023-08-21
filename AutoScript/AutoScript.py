@@ -2,6 +2,8 @@ import argparse
 import functools
 import logging
 import pathlib
+import pprint
+import re
 import sys
 from types import FunctionType
 from typing import List
@@ -23,6 +25,13 @@ def add_logging_flags(parser):
                            help='Set log level to warning')
     log_level.add_argument('--info', dest='log_level', action='store_const', const='info',
                            help='Set log level to info')
+
+
+def split_to_dict(string: str):
+    search_string = f'{string} '
+    pattern = re.compile('(\w+)=(?P<quote>["\']*)([^"\']+)(?P=quote)\s+')
+    results = [match[::2] for match in pattern.findall(search_string)]
+    return dict(results)
 
 
 def print_intro(description: str, script_name=pathlib.Path(sys.argv[0]).name[:-3], color='white'):
@@ -56,12 +65,14 @@ class AutoScript:
 
     def run(self):
         parser = self.build_parser()
-
         args = parser.parse_args()
+
         if args._interactive and '_func' not in args:
             print_intro(self._description + '\nEnter "help" for assistance, or "exit" to leave!',
                         color=self._title_color)
             interactive_parser = self.build_parser(add_epilog=False, add_help=False, exit_on_error=False)
+
+            environment = {}
             while (command := input('> ')) != 'exit':
                 # TODO add a "set" command for setting in session variables! And something for showing / deleting them
                 if command == 'exit':
@@ -75,8 +86,17 @@ class AutoScript:
                     target_subparser.epilog = ''
                     print(self.prepare_help_msg(target_subparser))
                     print('You can enter "help" to show this message again, or "exit" to leave!')
+                elif command.split()[0] == 'set':
+                    variables = split_to_dict(' '.join(command.split()[1:]))
+                    print(variables)
+                    environment.update(variables)
+                elif command.split()[0] == 'show':
+                    print('Environment:')
+                    pprint.pprint(environment)
                 else:
                     interactive_args, invalid_options = interactive_parser.parse_known_args(command.split())
+                    # TODO:
+                    # Add try catch here and print errors
                     if len(invalid_options) > 0:
                         print(f'Invalid options provided:\n{",".join(invalid_options)}')
                     else:
@@ -90,6 +110,7 @@ class AutoScript:
 
     def run_args(self, args):
         # Popping the function used out of the arguments passed to the function.
+        # TODO: Add a function which strips a dict only to match a function's signature
         func_args = {**vars(args)}
         func = func_args.pop('_func')
         func_args.pop('_interactive')
