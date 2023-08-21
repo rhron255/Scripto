@@ -4,6 +4,7 @@ import logging
 import pathlib
 import pprint
 import re
+import readline  # noqa # pylint: disable=unused-import
 import sys
 from types import FunctionType
 from typing import List
