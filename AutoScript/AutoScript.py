@@ -75,7 +75,6 @@ class AutoScript:
 
             environment = {}
             while (command := input('> ')) != 'exit':
-                # TODO add a "set" command for setting in session variables! And something for showing / deleting them
                 if command == 'exit':
                     exit(0)
                 elif command == 'help':
@@ -95,13 +94,29 @@ class AutoScript:
                     print('Environment:')
                     pprint.pprint(environment)
                 else:
-                    interactive_args, invalid_options = interactive_parser.parse_known_args(command.split())
-                    # TODO:
-                    # Add try catch here and print errors
-                    if len(invalid_options) > 0:
-                        print(f'Invalid options provided:\n{",".join(invalid_options)}')
+                    try:
+                        interactive_args, invalid_options = interactive_parser.parse_known_args(command.split())
+                    except argparse.ArgumentError as argparser_error:
+                        print(argparser_error)
+                    except argparse.ArgumentTypeError as argparser_error:
+                        print(argparser_error)
+                    except KeyboardInterrupt as key_interrupt:
+                        print('Exiting...')
+                        exit(0)
+                    except Exception as generic_exception:
+                        print(generic_exception)
                     else:
-                        self.run_args(interactive_args)
+                        if len(invalid_options) > 0:
+                            print(f'Invalid options provided:\n{",".join(invalid_options)}')
+                        else:
+                            try:
+                                self.run_args(interactive_args)
+                            except KeyboardInterrupt as key_interrupt:
+                                print('Exiting...')
+                                exit(0)
+                            except Exception as generic_exception:
+                                print(generic_exception)
+
         else:
             self.run_args(args)
 
@@ -120,8 +135,8 @@ class AutoScript:
         func(**func_args)
 
     def build_parser(self, *args, add_epilog=True, **parser_kwargs):
-        parser = argparse.ArgumentParser(description=self._description, conflict_handler='resolve',
-                                         formatter_class=argparse.RawDescriptionHelpFormatter, **parser_kwargs)
+        parser = ExceptionThrowingArgumentParser(description=self._description, conflict_handler='resolve',
+                                                 formatter_class=argparse.RawDescriptionHelpFormatter, **parser_kwargs)
         parser.set_defaults(_interactive=self._enable_interactive_mode)
         if len(self._functions) == 0:
             raise ValueError('No functions registered...')
@@ -188,3 +203,13 @@ class AutoScript:
             return wrapper
 
         return registration_function
+
+
+class ExceptionThrowingArgumentParser(argparse.ArgumentParser):
+    def error(self, message: str):
+        sub_name = self.prog.split()[1]
+        self.exit(2, f'{sub_name}: error: {message}')
+
+    def exit(self, status=0, message=None):
+        if message:
+            raise argparse.ArgumentError(message=message, argument=None)
