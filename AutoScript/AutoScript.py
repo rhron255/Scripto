@@ -13,7 +13,7 @@ import rich
 from pyfiglet import figlet_format
 
 from FuncUtils import generate_action_settings, validate_parameters_in_docstring, generate_parser_definitions, \
-    get_argument_names, make_kebab_case
+    get_argument_names, make_kebab_case, strip_dict_to_func_args
 
 
 def add_logging_flags(parser):
@@ -68,31 +68,16 @@ class AutoScript:
         parser = self.build_parser()
         args = parser.parse_args()
 
-        if args._interactive and '_func' not in args:
+        if args._interactive and '_func' not in args or '_force_interactive' in args and args._force_interactive:
             print_intro(self._description + '\nEnter "help" for assistance, or "exit" to leave!',
                         color=self._title_color)
-            interactive_parser = self.build_parser(add_epilog=False, add_help=False, exit_on_error=False)
+            interactive_parser = self.build_parser(is_interactive=True, add_epilog=False, add_help=False,
+                                                   exit_on_error=False)
 
             environment = {}
             while (command := input('> ')) != 'exit':
                 if command == 'exit':
                     exit(0)
-                elif command == 'help':
-                    print(self.prepare_help_msg(interactive_parser))
-                    print('You can enter "help" to show this message again, or "exit" to leave!')
-                elif command.split()[0] == 'help':
-                    target = command.split()[1]
-                    target_subparser = interactive_parser._subparsers._group_actions[0].choices[target]
-                    target_subparser.epilog = ''
-                    print(self.prepare_help_msg(target_subparser))
-                    print('You can enter "help" to show this message again, or "exit" to leave!')
-                elif command.split()[0] == 'set':
-                    variables = split_to_dict(' '.join(command.split()[1:]))
-                    print(variables)
-                    environment.update(variables)
-                elif command.split()[0] == 'show':
-                    print('Environment:')
-                    pprint.pprint(environment)
                 else:
                     try:
                         interactive_args, invalid_options = interactive_parser.parse_known_args(command.split())
@@ -110,13 +95,34 @@ class AutoScript:
                             print(f'Invalid options provided:\n{",".join(invalid_options)}')
                         else:
                             try:
-                                self.run_args(interactive_args)
+                                if '_action' in interactive_args:
+                                    if interactive_args._action == 'set':
+                                        variables = split_to_dict(' '.join(command.split()[1:]))
+                                        pprint.pprint(variables)
+                                        environment.update(variables)
+                                    elif interactive_args._action == 'show':
+                                        print('Environment:')
+                                        pprint.pprint(environment)
+                                    elif interactive_args._action == 'help':
+                                        if interactive_args.function == [None]:
+                                            print(self.prepare_help_msg(interactive_parser))
+                                            print(
+                                                'You can enter "help" to show this message again, or "exit" to leave!')
+                                        else:
+                                            target = interactive_args.function[0]
+                                            target_subparser = interactive_parser._subparsers._group_actions[0].choices[
+                                                target]
+                                            target_subparser.epilog = ''
+                                            print(self.prepare_help_msg(target_subparser))
+                                            print(
+                                                'You can enter "help" to show this message again, or "exit" to leave!')
+                                else:
+                                    self.run_args(interactive_args)
                             except KeyboardInterrupt as key_interrupt:
                                 print('Exiting...')
                                 exit(0)
                             except Exception as generic_exception:
                                 print(generic_exception)
-
         else:
             self.run_args(args)
 
@@ -126,23 +132,29 @@ class AutoScript:
 
     def run_args(self, args):
         # Popping the function used out of the arguments passed to the function.
-        # TODO: Add a function which strips a dict only to match a function's signature
         func_args = {**vars(args)}
-        func = func_args.pop('_func')
-        func_args.pop('_interactive')
         if self._use_logger:
             logging.basicConfig(level=func_args.pop('log_level'))
-        func(**func_args)
+        func = func_args.pop('_func')
+        func(**strip_dict_to_func_args(func, func_args))
 
-    def build_parser(self, *args, add_epilog=True, **parser_kwargs):
-        parser = ExceptionThrowingArgumentParser(description=self._description, conflict_handler='resolve',
-                                                 formatter_class=argparse.RawDescriptionHelpFormatter, **parser_kwargs)
+    def build_parser(self, *args, add_epilog=True, is_interactive=False, **parser_kwargs):
+        parser_settings = dict(description=self._description, conflict_handler='resolve',
+                               formatter_class=argparse.RawDescriptionHelpFormatter)
+        if is_interactive:
+            parser = ExceptionThrowingArgumentParser(**parser_settings, **parser_kwargs)
+        else:
+            parser = argparse.ArgumentParser(**parser_settings, **parser_kwargs)
+
         parser.set_defaults(_interactive=self._enable_interactive_mode)
         if len(self._functions) == 0:
             raise ValueError('No functions registered...')
-        if len(self._functions) == 1:
+        if len(self._functions) == 1 and not is_interactive:
             function = self._functions[0]
             self.add_function_to_parser(function, parser)
+            if self._enable_interactive_mode:
+                parser.add_argument('--interactive', help='Sets the script to run in interactive mode.',
+                                    dest='_force_interactive', action='store_true', default=False)
         else:
             sub = parser.add_subparsers(required=not self._enable_interactive_mode)
             for func in self._functions:
@@ -150,6 +162,20 @@ class AutoScript:
                 sub_parser = sub.add_parser(name, **settings, conflict_handler='resolve',
                                             formatter_class=argparse.RawDescriptionHelpFormatter, **parser_kwargs)
                 self.add_function_to_parser(func, sub_parser)
+            if is_interactive:
+                set_help = 'Sets a number of variables for the environment.'
+                set_parser = sub.add_parser('set', help=set_help, description=set_help)
+                set_parser.add_argument('key_value', nargs='*', type=split_to_dict,
+                                        help='The variables to set, in a "name"=value format.')
+                set_parser.set_defaults(_action='set')
+                show_help = 'Shows the values currently set in the environment.'
+                show_parser = sub.add_parser('show', help=show_help, description=show_help)
+                show_parser.set_defaults(_action='show')
+                help_help = 'Prints the help message for the tool being used, or for the function supplied.'
+                help_parser = sub.add_parser('help', help=help_help, description=help_help)
+                help_parser.add_argument('function', nargs='*', default=[None],
+                                         help='The function whose help message should be printed.')
+                help_parser.set_defaults(_action='help')
         return parser
 
     def add_function_to_parser(self, func, parser):

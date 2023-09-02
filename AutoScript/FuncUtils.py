@@ -104,3 +104,16 @@ def validate_parameters_in_docstring(func: FunctionType, supress_warnings=False)
 
 def get_argument_names(func: FunctionType) -> List[str]:
     return [key for key in inspect.signature(func).parameters.keys()]
+
+
+def strip_dict_to_func_args(func: FunctionType, args: dict) -> dict:
+    """
+    Strips a dict to arguments of the function supplied.
+    :param func: The function to strip the dict according to.
+    :param args: The args dict that needs stripping.
+    :return: The stripped dict.
+    """
+    for k in args.keys():
+        if k not in get_argument_names(func):
+            args.pop(k)
+    return args
