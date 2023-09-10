@@ -13,7 +13,7 @@ import rich
 from pyfiglet import figlet_format
 
 from FuncUtils import generate_action_settings, validate_parameters_in_docstring, generate_parser_definitions, \
-    get_argument_names, make_kebab_case, strip_dict_to_func_args
+    get_argument_names, make_kebab_case, strip_dict_to_func_args, parse_dict_to_parameters
 
 
 def add_logging_flags(parser):
@@ -58,6 +58,7 @@ class AutoScript:
 
     def __init__(self, description, suppress_warnings=False, auto_log=False, enable_interactive_mode=False,
                  title_color='white'):
+        self._environment = {}
         self._description = description
         self._silence = suppress_warnings
         self._use_logger = auto_log
@@ -74,7 +75,7 @@ class AutoScript:
             interactive_parser = self.build_parser(is_interactive=True, add_epilog=False, add_help=False,
                                                    exit_on_error=False)
 
-            environment = {}
+            self._environment = {}
             while (command := input('> ')) != 'exit':
                 if command == 'exit':
                     exit(0)
@@ -99,10 +100,10 @@ class AutoScript:
                                     if interactive_args._action == 'set':
                                         variables = split_to_dict(' '.join(command.split()[1:]))
                                         pprint.pprint(variables)
-                                        environment.update(variables)
+                                        self._environment.update(variables)
                                     elif interactive_args._action == 'show':
                                         print('Environment:')
-                                        pprint.pprint(environment)
+                                        pprint.pprint(self._environment)
                                     elif interactive_args._action == 'help':
                                         if interactive_args.function == [None]:
                                             print(self.prepare_help_msg(interactive_parser))
@@ -136,6 +137,8 @@ class AutoScript:
         if self._use_logger:
             logging.basicConfig(level=func_args.pop('log_level'))
         func = func_args.pop('_func')
+        env_dict = parse_dict_to_parameters(func, self._environment)
+        func_args.update(env_dict)
         func(**strip_dict_to_func_args(func, func_args))
 
     def build_parser(self, *args, add_epilog=True, is_interactive=False, **parser_kwargs):

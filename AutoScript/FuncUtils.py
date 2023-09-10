@@ -1,8 +1,12 @@
 import inspect
+import json
 import re
 import warnings
 from types import FunctionType
 from typing import List, Dict
+
+import pydantic
+from pydantic import BaseModel
 
 
 def get_description(func: FunctionType) -> str:
@@ -113,7 +117,33 @@ def strip_dict_to_func_args(func: FunctionType, args: dict) -> dict:
     :param args: The args dict that needs stripping.
     :return: The stripped dict.
     """
+    new_args = {}
     for k in args.keys():
-        if k not in get_argument_names(func):
-            args.pop(k)
-    return args
+        if k in get_argument_names(func):
+            new_args[k] = args[k]
+    return new_args
+
+
+def create_model(func: FunctionType) -> BaseModel:
+    """
+    Creates a pydantic BaseModel matching the function's signature.
+    :param func: The function to create the model for.
+    :return: The base model representing the functions parameters.
+    """
+    arg_tuple_dict = {}
+    arg: inspect.Parameter
+    for arg in inspect.signature(func).parameters.values():
+        arg_tuple_dict[arg.name] = (arg.annotation, arg.default)
+    return pydantic.create_model(f'{func.__name__.title()}Model', **arg_tuple_dict)
+
+
+def parse_dict_to_parameters(func: FunctionType, args: dict):
+    """
+    Takes a dict and parses the data within according to the types of the function's parameters.
+    :param func: The function to parse the arguments for.
+    :param args: The arguments to parse.
+    :return: A dict of parsed arguments for the function's signature.
+    """
+    model = create_model(func)
+    data = model.model_validate_json(json.dumps(args)).model_dump(exclude_unset=True)
+    return {arg for arg in data.items() if arg[1] is not inspect.Parameter.empty}
