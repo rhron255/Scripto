@@ -1,50 +1,15 @@
 import argparse
 import functools
 import logging
-import pathlib
 import pprint
-import re
 import readline  # noqa # pylint: disable=unused-import
-import sys
 from types import FunctionType
 from typing import List
 
-import rich
-from pyfiglet import figlet_format
-
-from FuncUtils import generate_action_settings, validate_parameters_in_docstring, generate_parser_definitions, \
-    get_argument_names, make_kebab_case, strip_dict_to_func_args, parse_dict_to_parameters
-
-
-def add_logging_flags(parser):
-    log_level = parser.add_mutually_exclusive_group()
-    log_level.add_argument('--trace', dest='log_level', action='store_const', const='trace',
-                           help='Set log level to trace')
-    log_level.add_argument('--debug', dest='log_level', action='store_const', const='debug',
-                           help='Set log level to debug')
-    log_level.add_argument('--warn', dest='log_level', action='store_const', const='warn',
-                           help='Set log level to warning')
-    log_level.add_argument('--info', dest='log_level', action='store_const', const='info',
-                           help='Set log level to info')
-
-
-def split_to_dict(string: str):
-    search_string = f'{string} '
-    pattern = re.compile('(\w+)=(?P<quote>["\']*)([^"\']+)(?P=quote)\s+')
-    results = [match[::2] for match in pattern.findall(search_string)]
-    return dict(results)
-
-
-def print_intro(description: str, script_name=pathlib.Path(sys.argv[0]).name[:-3], color='white'):
-    """
-    Prints an introduction to the script, mainly meant for interactive shells.
-    :param description: The description of the script.
-    :param script_name: The name of script, by default is taken from the name of the file.
-    :param color: Colors the title in the provided color name. See rich package for color options.
-    :return:
-    """
-    rich.print(f'[{color}]{figlet_format(script_name, font="slant")}[/{color}]')
-    print(description)
+from ArgumentParserExtensions import ExceptionThrowingArgumentParser, add_logging_flags, generate_parser_definitions
+from FuncUtils import validate_parameters_in_docstring, get_argument_names, make_kebab_case, strip_dict_to_func_args, \
+    parse_dict_to_parameters
+from StringUtils import print_intro, split_to_dict
 
 
 class AutoScript:
@@ -232,13 +197,3 @@ class AutoScript:
             return wrapper
 
         return registration_function
-
-
-class ExceptionThrowingArgumentParser(argparse.ArgumentParser):
-    def error(self, message: str):
-        sub_name = self.prog.split()[1]
-        self.exit(2, f'{sub_name}: error: {message}')
-
-    def exit(self, status=0, message=None):
-        if message:
-            raise argparse.ArgumentError(message=message, argument=None)
