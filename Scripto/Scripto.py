@@ -4,7 +4,7 @@ import logging
 from types import FunctionType
 from typing import List
 
-from AutoScript.FuncUtils import generate_action_settings, validate_parameters_in_docstring, generate_parser_definitions, \
+from Scripto.FuncUtils import generate_action_settings, validate_parameters_in_docstring, generate_parser_definitions, \
     get_argument_names, make_kebab_case
 
 
@@ -20,7 +20,7 @@ def add_logging_flags(parser):
                            help='Set log level to info')
 
 
-class AutoScript:
+class Scripto:
     _description: str
     _silence: bool
     _functions: List[FunctionType] = []

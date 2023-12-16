@@ -7,7 +7,7 @@ here = pathlib.Path(__file__).parent.resolve()
 long_description = (here / 'README.md').read_text(encoding='utf-8')
 
 setup(
-    name='AutoScript',
+    name='Scripto',
     version='0.0.1',
     description='A simple framework to help you build scripts faster!',
     long_description=long_description,
@@ -15,8 +15,8 @@ setup(
     author='Ron Hasleton',
     author_email='ronhasleton@gmail.com',
     keywords='scripting, auto, cli, argparse',
-    package_dir={'': 'AutoScript'},
-    packages=find_packages(where='AutoScript'),
+    package_dir={'': 'Scripto'},
+    packages=find_packages(where='Scripto'),
     python_requires='>=3.7, <4',
     license='GNU GPLv3'
 )

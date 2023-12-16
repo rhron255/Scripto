@@ -1,7 +1,7 @@
 # A test document with function stubs to test
-from AutoScript.AutoScript import AutoScript
+from Scripto.Scripto import Scripto
 
-script = AutoScript("Test",
+script = Scripto("Test",
                     suppress_warnings=True,
                     auto_log=True)
 
