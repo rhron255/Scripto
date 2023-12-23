@@ -4,7 +4,7 @@ import logging
 from types import FunctionType
 from typing import List
 
-from Scripto.FuncUtils import generate_action_settings, validate_parameters_in_docstring, generate_parser_definitions, \
+from scripto.FuncUtils import generate_action_settings, validate_parameters_in_docstring, generate_parser_definitions, \
     get_argument_names, make_kebab_case
 
 
