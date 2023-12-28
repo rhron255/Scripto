@@ -4,20 +4,8 @@ import logging
 from types import FunctionType
 from typing import List
 
-from scripto.FuncUtils import generate_action_settings, validate_parameters_in_docstring, generate_parser_definitions, \
-    get_argument_names, make_kebab_case
-
-
-def add_logging_flags(parser):
-    log_level = parser.add_mutually_exclusive_group()
-    log_level.add_argument('--trace', dest='log_level', action='store_const', const='trace',
-                           help='Set log level to trace')
-    log_level.add_argument('--debug', dest='log_level', action='store_const', const='debug',
-                           help='Set log level to debug')
-    log_level.add_argument('--warn', dest='log_level', action='store_const', const='warn',
-                           help='Set log level to warning')
-    log_level.add_argument('--info', dest='log_level', action='store_const', const='info',
-                           help='Set log level to info')
+from scripto.ArgParserUtils import add_logging_flags, generate_parser_definitions, generate_action_settings
+from scripto.FuncUtils import validate_parameters_in_docstring, get_argument_names, make_kebab_case
 
 
 class Scripto:
