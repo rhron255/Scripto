@@ -1,5 +1,5 @@
 import pathlib
-
+import os
 from setuptools import setup, find_packages
 
 here = pathlib.Path(__file__).parent.resolve()
@@ -9,7 +9,7 @@ long_description = (here / 'README.md').read_text(encoding='utf-8')
 
 setup(
     name='Scripto',
-    version='0.0.6',
+    version=os.getenv('SCRIPTO_VERSION'),
     description='A simple framework to help you build scripts faster!',
     long_description=long_description,
     long_description_content_type='text/markdown',
