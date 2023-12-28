@@ -35,7 +35,7 @@ jobs:
         pip install build
     - name: Build package
       run: python -m build
-      with:
+      env:
         SCRIPTO_VERSION: ${{ variables.SCRIPTO_VERSION }}
         
     - name: Publish package
