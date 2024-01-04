@@ -1,4 +1,5 @@
 # Scripto
+[![Pylint](https://github.com/rhron255/Scripto/actions/workflows/pylint.yaml/badge.svg)](https://github.com/rhron255/Scripto/actions/workflows/pylint.yaml)
 
 Are you sick of writing long and annoying argparse initialization code?
 Worry no more - the future is here!
