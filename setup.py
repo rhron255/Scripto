@@ -9,7 +9,7 @@ long_description = (here / 'README.md').read_text(encoding='utf-8')
 
 setup(
     name='Scripto',
-    version='0.0.8',
+    version='0.0.9',
     description='A simple framework to help you build scripts faster!',
     long_description=long_description,
     long_description_content_type='text/markdown',
