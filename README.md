@@ -45,7 +45,7 @@ to effortlessly generate a feature-rich command-line interface.
 
 ## Complex Examples
 
-See the [example](exmaples/Examples.py) script provided.
+See the [example](exmaples) scripts provided.
 
 ## About the rationale
 
