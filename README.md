@@ -1,7 +1,10 @@
 # Scripto
 [![Build Project](https://github.com/rhron255/Scripto/actions/workflows/python-build.yaml/badge.svg)](https://github.com/rhron255/Scripto/actions/workflows/python-build.yaml)
 [![linting: pylint](https://img.shields.io/badge/linting-pylint-yellowgreen)](https://github.com/pylint-dev/pylint)
-[![python: version](https://img.shields.io/pypi/pyversions/scripto.svg)](https://img.shields.io/pypi/pyversions/scripto.svg?color=%2334D058)
+![Python Version from PEP 621 TOML](https://img.shields.io/python/required-version-toml?tomlFilePath=https%3A%2F%2Fraw.githubusercontent.com%2Frhron255%2Fscripto%2Fmain%2Fpyproject.toml)
+![PyPI - Version](https://img.shields.io/pypi/v/scripto)
+![PyPI - Downloads](https://img.shields.io/pypi/dm/scripto)
+
 
 Are you sick of writing long and annoying argparse initialization code?
 Worry no more - the future is here!
