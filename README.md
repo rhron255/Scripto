@@ -1,6 +1,7 @@
 # Scripto
-[![Pylint](https://github.com/rhron255/Scripto/actions/workflows/pylint.yaml/badge.svg)](https://github.com/rhron255/Scripto/actions/workflows/pylint.yaml)
 [![Build Project](https://github.com/rhron255/Scripto/actions/workflows/python-build.yaml/badge.svg)](https://github.com/rhron255/Scripto/actions/workflows/python-build.yaml)
+[![linting: pylint](https://img.shields.io/badge/linting-pylint-yellowgreen)](https://github.com/pylint-dev/pylint)
+[![python: version](https://img.shields.io/pypi/pyversions/scripto.svg)](https://img.shields.io/pypi/pyversions/scripto.svg?color=%2334D058)
 
 Are you sick of writing long and annoying argparse initialization code?
 Worry no more - the future is here!
