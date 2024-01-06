@@ -1,3 +1,22 @@
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
+
+[project.urls]
+Repository = "https://github.com/rhron255/Scripto"
+Issues = "https://github.com/rhron255/Scripto/issues"
+
+[project]
+name = "Scripto"
+description = "A simple framework to help you build scripts faster!"
+version = "0.0.10"
+readme = {file = "README.txt", content-type = "text/markdown"}
+license = {file = "LICENSE.txt"}
+requires-python = ">= 3.8"
+authors = [
+  {name = "Ron Hasleton", email = "ronhasleton@gmail.com"}
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+]
