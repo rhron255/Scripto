@@ -1,4 +1,4 @@
-#pylint: disable=W1401
+# pylint: disable=W1401
 """
 A utility module for various function parsing functions.
 """
@@ -15,11 +15,19 @@ def get_description(func: FunctionType) -> str:
     :param func: The function to retrieve documentation from.
     :return: The documentation of the function.
     """
-    docstring = inspect.getdoc(func)
-    doc_end = docstring.find('\n:')
-    if doc_end == -1:
-        return docstring
-    return docstring[:doc_end].strip()
+    docstring = get_escaped_docstring(func)
+    if docstring is not None:
+        doc_end = docstring.find('\n:')
+        if doc_end == -1:
+            return docstring
+        return docstring[:doc_end].strip()
+
+
+def get_escaped_docstring(func):
+    doc = inspect.getdoc(func)
+    if doc:
+        return doc.replace('%', '%%')
+    return None
 
 
 def get_parameters(func: FunctionType) -> List[Dict]:
@@ -30,17 +38,19 @@ def get_parameters(func: FunctionType) -> List[Dict]:
     :return: A dictionary with data regarding the parameter.
     """
     signature = inspect.signature(func)
-    docstring = inspect.getdoc(func)
+    docstring = get_escaped_docstring(func)
     parameters = []
     for param in signature.parameters.values():
-        result = re.compile(f':param {param.name}:\s*(?P<desc>.*)\s*:param').search(
-            docstring.replace('\n', ''))
-        if result is None:
-            result = re.compile(f':param {param.name}:\s*(?P<desc>.*)\s*:return').search(
+        result = None
+        if docstring:
+            result = re.compile(f':param {param.name}:\s*(?P<desc>.*)\s*:param').search(
                 docstring.replace('\n', ''))
+            if result is None:
+                result = re.compile(f':param {param.name}:\s*(?P<desc>.*)\s*:return').search(
+                    docstring.replace('\n', ''))
         parameter = {
             'name': param.name,
-            'type': param.annotation,
+            'type': param.annotation if param.annotation != inspect.Parameter.empty else str,
             'description': result.groupdict()['desc'] if result is not None else ''
         }
         if param.default is not inspect.Parameter.empty:
@@ -65,7 +75,9 @@ def get_first_doc_sentence(func) -> str:
     :return: The first sentence of the documentation.
     """
     description = get_description(func)
-    return description.split('.')[0] if '.' in description else description
+    if description:
+        return description.split('.')[0] if '.' in description else description
+    return None
 
 
 def validate_parameters_in_docstring(func: FunctionType, supress_warnings=False) -> None:
@@ -77,20 +89,24 @@ def validate_parameters_in_docstring(func: FunctionType, supress_warnings=False)
     :return: None
     """
     signature = inspect.signature(func)
-    docstring = inspect.getdoc(func)
+    docstring = get_escaped_docstring(func)
     for param in signature.parameters.values():
-        result = re.compile(f':param {param.name}:\s*(?P<desc>.*)\s*:param').search(
-            docstring.replace('\n', ''))
-        if result is None:
-            result = re.compile(f':param {param.name}:\s*(?P<desc>.*)\s*:return').search(
+        if docstring:
+            result = re.compile(f':param {param.name}:\s*(?P<desc>.*)\s*:param').search(
                 docstring.replace('\n', ''))
-            if result is None and not supress_warnings:
-                warnings.warn(
-                    f'Documentation not sufficient to parse description for parameter: "{param.name}" in function: "{func.__name__}".',
-                    stacklevel=3)
-        if param.annotation is inspect.Parameter.empty:
-            raise TypeError(
-                f'No type annotation found for parameter: "{param.name}" in function: "{func.__name__}".')
+            if result is None:
+                result = re.compile(f':param {param.name}:\s*(?P<desc>.*)\s*:return').search(
+                    docstring.replace('\n', ''))
+                if result is None and not supress_warnings:
+                    warnings.warn(
+                        f'Documentation not sufficient to parse description for parameter: "{param.name}" in function: "{func.__name__}".',
+                        stacklevel=3)
+        if param.annotation is inspect.Parameter.empty and not supress_warnings:
+            warnings.warn(
+                f'No type annotations for: "{param.name}" in function: "{func.__name__}", may result in unexpected beavhiour.',
+                stacklevel=3)
+            # raise TypeError(
+            #     f'No type annotation found for parameter: "{param.name}" in function: "{func.__name__}".')
 
 
 def get_argument_names(func: FunctionType) -> List[str]:

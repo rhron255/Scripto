@@ -57,7 +57,9 @@ class Scripto:
         if self._use_logger:
             logging.basicConfig(level=func_args['log_level'])
             func_args.pop('log_level')
-        args.func(**func_args)
+        output = args.func(**func_args)
+        if output:
+            print(output)
 
     def add_function_to_parser(self, func: FunctionType, parser: ArgumentParser):
         """
