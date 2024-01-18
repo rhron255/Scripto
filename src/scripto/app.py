@@ -6,6 +6,7 @@ import argparse
 import functools
 import logging
 import os.path
+import string
 import sys
 from argparse import ArgumentParser
 from types import FunctionType
@@ -22,6 +23,7 @@ class Scripto:
     """
     Holder and runner class for scripts.
     """
+    _script_name: str
     _description: str
     _silence: bool
     _functions: List[FunctionType] = []
@@ -41,7 +43,11 @@ class Scripto:
         Parses the functions into an ArgumentParser and runs the script accordingly.
         :return: None
         """
-        print(figlet_format(self._script_name, font=self._figlet_font))
+        fixed_name = self._script_name[1:]
+        for letter in string.ascii_uppercase:
+            fixed_name = fixed_name.replace(letter, f'\n{letter}', )
+        fixed_name = (self._script_name[0] + fixed_name).rstrip()
+        print(figlet_format(fixed_name, font=self._figlet_font))
 
         parser = argparse.ArgumentParser(description=self._description, conflict_handler='resolve',
                                          formatter_class=argparse.RawDescriptionHelpFormatter)
