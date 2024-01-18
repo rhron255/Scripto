@@ -6,7 +6,8 @@ import readline  # noqa # pylint: disable=unused-import
 from types import FunctionType
 from typing import List
 
-from ArgumentParserExtensions import ExceptionThrowingArgumentParser, add_logging_flags, generate_parser_definitions
+from ArgumentParserExtensions import ExceptionThrowingArgumentParser, add_logging_flags, generate_parser_definitions, \
+    generate_action_settings
 from FuncUtils import validate_parameters_in_docstring, get_argument_names, make_kebab_case, strip_dict_to_func_args, \
     parse_dict_to_parameters
 from StringUtils import print_intro, split_to_dict
