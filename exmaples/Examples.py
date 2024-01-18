@@ -1,7 +1,8 @@
 # A test document with function stubs to test
 from scripto.app import Scripto
 
-script = Scripto("Test",
+script = Scripto(script_name="ScriptoExamples",
+                 description="An example script to show users what this can do!",
                  suppress_warnings=True,
                  auto_log=True)
 

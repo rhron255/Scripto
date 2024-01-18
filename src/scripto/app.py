@@ -5,9 +5,13 @@ Contains the Scripto class, which is the main holder of the script data/metadata
 import argparse
 import functools
 import logging
+import os.path
+import sys
 from argparse import ArgumentParser
 from types import FunctionType
 from typing import List
+
+from pyfiglet import figlet_format
 
 from scripto.ArgParserUtils import add_logging_flags, generate_parser_definitions, \
     generate_action_settings
@@ -24,16 +28,21 @@ class Scripto:
     _arg_initializers = {}
     _use_logger = False
 
-    def __init__(self, description, suppress_warnings=False, auto_log=False):
+    def __init__(self, description, script_name=os.path.splitext(os.path.basename(sys.argv[0]))[0], figlet_font="slant",
+                 suppress_warnings=False, auto_log=False):
         self._description = description
         self._silence = suppress_warnings
         self._use_logger = auto_log
+        self._script_name = script_name
+        self._figlet_font = figlet_font
 
     def run(self) -> None:
         """
         Parses the functions into an ArgumentParser and runs the script accordingly.
         :return: None
         """
+        print(figlet_format(self._script_name, font=self._figlet_font))
+
         parser = argparse.ArgumentParser(description=self._description, conflict_handler='resolve',
                                          formatter_class=argparse.RawDescriptionHelpFormatter)
         if len(self._functions) == 0:
