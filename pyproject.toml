@@ -9,7 +9,7 @@ Issues = "https://github.com/rhron255/Scripto/issues"
 [project]
 name = "Scripto"
 description = "A simple framework to help you build scripts faster!"
-version = "0.0.13"
+version = "0.0.14"
 readme = {file = "README.md", content-type = "text/markdown"}
 license = {file = "LICENSE.txt"}
 requires-python = ">=3.8"
