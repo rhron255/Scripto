@@ -42,7 +42,12 @@ class Scripto:
             function = self._functions[0]
             self.add_function_to_parser(function, parser)
         else:
-            sub = parser.add_subparsers(required=True)
+            # Handling a weird edge case where when nothing is passed, part 1. 
+            # You can look up this error: 
+            #  TypeError: sequence item 0: expected str instance, NoneType found
+            # There's all sorts of stuff about this online - setting this to false and handling the
+            #  lack of parameters seems like the best workaround for now
+            sub = parser.add_subparsers(required=False)
             for func in self._functions:
                 name, settings = generate_parser_definitions(func)
                 sub_parser = sub.add_parser(name, **settings, conflict_handler='resolve',
@@ -51,8 +56,14 @@ class Scripto:
 
         # Parsing the arguments passed to the program.
         args = parser.parse_args()
-        # Popping the function used out of the arguments passed to the function.
         func_args = {**vars(args)}
+        
+        # Handling a weird edge case where when nothing is passed, part 2
+        if (len(func_args)) == 0:
+            parser.print_help()
+            exit(1)
+        
+        # Popping the function used out of the arguments passed to the function.
         func_args.pop('func')
         if self._use_logger:
             logging.basicConfig(level=func_args['log_level'])
