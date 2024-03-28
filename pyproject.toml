@@ -20,3 +20,6 @@ classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
 ]
+
+[tool.setuptools.dynamic]
+version = {file = "scripto.VERSION"}
