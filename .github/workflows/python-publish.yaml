@@ -6,7 +6,6 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -15,6 +14,21 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+      - name: Git Semantic Version
+        id: version
+        # You may pin to the exact commit or the version.
+        # uses: PaulHatch/semantic-version@a8f8f59fd7f0625188492e945240f12d7ad2dca3
+        uses: PaulHatch/semantic-version@v5.4.0
+      - name: Cancel if Unchanged
+        if: ${{ ! steps.version.outputs.changed }}
+        run: |
+          gh run cancel ${{ github.run_id }}
+          gh run watch ${{ github.run_id }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Override new version
+        run: |
+          echo ${{ steps.version.version }} > scripto.VERSION
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v3
         with:
