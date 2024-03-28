@@ -28,7 +28,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Override new version
         run: |
-          echo ${{ steps.version.version }} > scripto.VERSION
+          echo ${{ steps.version.outputs.version }} > scripto.VERSION
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v3
         with:
