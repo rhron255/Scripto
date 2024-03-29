@@ -1,6 +1,9 @@
+"""
+A module wrapping tool!
+"""
 import os.path
 
-module_template = """
+MODULE_TEMPLATE = """
 from scripto.app import Scripto
 import $MODULE_NAME
 script = Scripto("$CAP_MODULE_NAME Wrapper", suppress_warnings=True)
@@ -16,7 +19,7 @@ script.run()
 
 """
 
-func_template = """
+FUNC_TEMPLATE = """
 from scripto.app import Scripto
 import $MODULE_NAME
 script = Scripto("$CAP_MODULE_NAME Wrapper", suppress_warnings=True)
@@ -45,12 +48,12 @@ def wrap(module_name: str, output_path: str = os.path.expanduser('~/scripto'), f
         os.makedirs(output_path, exist_ok=True)
     if function_name:
         with open(os.path.join(output_path, f'{function_name}.py'), 'w') as sc_file:
-            named_template = func_template.replace('$CAP_MODULE_NAME', module_name.upper())
+            named_template = FUNC_TEMPLATE.replace('$CAP_MODULE_NAME', module_name.upper())
             named_template = named_template.replace('$FUNC_NAME', function_name)
             sc_file.write(named_template.replace('$MODULE_NAME', module_name))
     else:
         with open(os.path.join(output_path, f'auto_{module_name}.py'), 'w') as sc_file:
-            named_template = module_template.replace('$CAP_MODULE_NAME', module_name.upper())
+            named_template = MODULE_TEMPLATE.replace('$CAP_MODULE_NAME', module_name.upper())
             sc_file.write(named_template.replace('$MODULE_NAME', module_name))
 
 
