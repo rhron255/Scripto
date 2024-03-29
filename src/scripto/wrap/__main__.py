@@ -1,7 +1,4 @@
 import os.path
-from scripto.app import Scripto
-
-script = Scripto('Module Wrapper Utility')
 
 module_template = """
 from scripto.app import Scripto
@@ -36,7 +33,6 @@ script.run()
 """
 
 
-@script.register()
 def wrap(module_name: str, output_path: str = os.path.expanduser('~/scripto'), function_name: str = None):
     """
     Automatically generates a script wrapping a module, and places it under a 'scripto' directory in the user's home folder.
@@ -59,4 +55,8 @@ def wrap(module_name: str, output_path: str = os.path.expanduser('~/scripto'), f
 
 
 if __name__ == '__main__':
+    from scripto.app import Scripto
+
+    script = Scripto("Module Wrapping Utility")
+    script.register()(wrap)
     script.run()
