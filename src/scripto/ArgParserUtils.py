@@ -2,7 +2,7 @@
 A utility module for all the various functions used in building the argument parser.
 """
 from types import FunctionType
-from typing import Tuple
+from typing import Any, Tuple
 
 from scripto.FuncUtils import make_kebab_case, get_description, get_first_doc_sentence, \
     get_parameters
@@ -49,13 +49,20 @@ def generate_action_settings(func: FunctionType):
     # TODO re-write this function and its usages. The way the name is handled sucks.
     parameters = get_parameters(func)
     for param in parameters:
-        settings = {'type': param['type'], 'help': param['description'], 'required': True}
+        settings = {'type': param['type'], 'help': param['description']}
         if param['type'] is bool:
             name = param['name']
             param['name'] = []
             param['name'].append(f'--{make_kebab_case(name)}')
             param['name'].append(f'-{name[0]}')
             settings['action'] = 'store_true'
+            settings.pop('type')
+        elif hasattr(param['type'],'__origin__') and param['type'].__origin__ is list:
+            name = param['name']
+            param['name'] = []
+            param['name'].append(f'--{make_kebab_case(name)}')
+            param['name'].append(f'-{name[0]}')
+            settings['nargs'] = '*'
             settings.pop('type')
         if 'default' in param:
             if param['type'] is not bool:
