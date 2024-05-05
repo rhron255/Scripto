@@ -3,4 +3,4 @@
 /dist/
 /src/Scripto.egg-info/
 venv
-/src/scripto/__pycahce__/
+/src/scripto/__pycache__/

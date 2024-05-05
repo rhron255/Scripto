@@ -63,7 +63,7 @@ def generate_action_settings(func: FunctionType):
             param['name'].append(f'--{make_kebab_case(name)}')
             param['name'].append(f'-{name[0]}')
             settings['nargs'] = '*'
-            settings.pop('type')
+            settings['type'] = param['type'].__args__[0]
         if 'default' in param:
             if param['type'] is not bool:
                 name = param['name']
