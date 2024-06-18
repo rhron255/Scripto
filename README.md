@@ -63,7 +63,7 @@ python3 -m scripto.wrap os.path
 ```
 
 Will generate a python script exposing the entirety of the `os.path` module, to a script called auto_os.path.py.
-Of course you may rename this to whatever you want for your convenience,
+Of course you may rename this to whatever you want for your convenience.
 
 ## About the rationale
 
