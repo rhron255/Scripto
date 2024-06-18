@@ -21,7 +21,7 @@ jobs:
         # You may pin to the exact commit or the version.
         # uses: PaulHatch/semantic-version@a8f8f59fd7f0625188492e945240f12d7ad2dca3
         uses: PaulHatch/semantic-version@v5.4.0
-        bump_each_commit: true
+        # bump_each_commit: true
       - name: Cancel if Unchanged
         if: ${{ ! steps.version.outputs.changed }}
         run: |
