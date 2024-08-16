@@ -9,7 +9,7 @@ import json
 
 from scripto.app import Scripto
 
-script = Scripto('JSONify')
+script = Scripto('JSONify', enable_interactive_mode=True)
 
 
 @script.register()

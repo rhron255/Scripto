@@ -5,6 +5,11 @@ Contains the Scripto class, which is the main holder of the script data/metadata
 import argparse
 import functools
 import logging
+import os
+import re
+import subprocess
+import sys
+import tty
 from argparse import ArgumentParser
 from types import FunctionType
 from typing import List
@@ -23,11 +28,13 @@ class Scripto:
     _functions: List[FunctionType] = []
     _arg_initializers = {}
     _use_logger = False
+    _enable_interactive_mode = False
 
-    def __init__(self, description, suppress_warnings=False, auto_log=False):
+    def __init__(self, description, suppress_warnings=False, auto_log=False, enable_interactive_mode=False):
         self._description = description
         self._silence = suppress_warnings
         self._use_logger = auto_log
+        self._enable_interactive_mode = enable_interactive_mode
 
     def run(self) -> None:
         """
@@ -54,8 +61,16 @@ class Scripto:
                                             formatter_class=argparse.RawDescriptionHelpFormatter)
                 self.add_function_to_parser(func, sub_parser)
 
+        if self._enable_interactive_mode:
+            parser.add_argument("--interactive", "-i", action='store_true', help="Loads the script into the current shell")
+
         # Parsing the arguments passed to the program.
         args = parser.parse_args()
+
+        if self._enable_interactive_mode and args.interactive:
+            self.load_to_cmd()
+            exit(0)
+
         func_args = {**vars(args)}
         
         # Handling a weird edge case where when nothing is passed, part 2
@@ -141,3 +156,21 @@ class Scripto:
             return wrapper
 
         return registration_function
+
+    def load_to_cmd(self):
+        # nix systems handling here
+        if re.match('^[a-z]+ix$', os.name):
+            file_name = f"interactive_{os.path.splitext(os.path.basename(sys.argv[0]))[0]}.sh"
+            with open(file_name, 'w') as f:
+                pass
+            for func in self._functions:
+                with open(file_name, "a") as command_file:
+                    command_file.write(
+                        f"{make_kebab_case(func.__name__)}() {{\n" +
+                        f"python3 {os.path.abspath(sys.argv[0])} {make_kebab_case(func.__name__)} \"$@\";\n"
+                        f"}}\n"
+                    )
+            print(f"To finish loading the script, run the following command:\nsource {file_name}")
+        else:
+            pass
+
