@@ -49,6 +49,7 @@ def generate_action_settings(func: FunctionType):
     # TODO re-write this function and its usages. The way the name is handled sucks.
     parameters = get_parameters(func)
     for param in parameters:
+        original_parm_name= param['name']
         settings = {'type': param['type'], 'help': param['description']}
         if param['type'] is bool:
             name = param['name']
@@ -66,7 +67,7 @@ def generate_action_settings(func: FunctionType):
             settings['type'] = param['type'].__args__[0]
         if 'default' in param:
             if param['type'] is not bool:
-                name = param['name']
+                name = param['name'] if type(param['name']) is not list else original_parm_name
                 param['name'] = []
                 param['name'].append(f'--{make_kebab_case(name)}')
                 param['name'].append(f'-{name[0]}')
