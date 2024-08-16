@@ -50,6 +50,10 @@ def get_parameters(func: FunctionType) -> List[Dict]:
                 result = re.compile(
                     f":param {param.name}:\s*(?P<desc>.*)\s*:return"
                 ).search(docstring.replace("\n", ""))
+                if result is None:
+                    result = re.compile(
+                        f":param {param.name}:\s*(?P<desc>.*)\s*"
+                    ).search(docstring.replace("\n", ""))
         parameter = {
             "name": param.name,
             "type": (

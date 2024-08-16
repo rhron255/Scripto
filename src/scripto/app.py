@@ -95,6 +95,8 @@ class Scripto:
         :param parser: The parser that the function should be added to.
         :return: None
         """
+        if not parser.description:
+            parser.description = ""
         for name, settings in generate_action_settings(func):
             target_name = name
             if isinstance(name, list):
@@ -130,6 +132,27 @@ class Scripto:
                     else:
                         parser.add_argument(
                             name, **settings, choices=sorted(argument_values)
+                        )
+                elif isinstance(argument_values, set):
+                    parser.description += f'\n\t{target_name} - {settings["help"]}'
+                    should_be_required = True
+
+                    if settings.get("default") and settings.get("default") not in argument_values:
+                        should_be_required = False
+                        parser.set_defaults(**{f"{target_name}": settings["default"]})
+                        argument_values.add(settings["default"])
+
+                    mutex_group = parser.add_mutually_exclusive_group(
+                        required=should_be_required
+                    )
+                    for value in argument_values:
+                        mutex_group.add_argument(
+                            f"--{make_kebab_case(value)}",
+                            f"-{make_kebab_case(value)[0]}",
+                            dest=target_name,
+                            action="store_const",
+                            const=value,
+                            help=f"Sets {target_name} to {value}",
                         )
             else:
                 if isinstance(name, list):
