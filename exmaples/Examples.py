@@ -1,12 +1,10 @@
 # A test document with function stubs to test
 from scripto.app import Scripto
 
-script = Scripto("Test",
-                 suppress_warnings=True,
-                 auto_log=True)
+script = Scripto("Test", suppress_warnings=True, auto_log=True)
 
 
-@script.register(param_a={'one': 1, 'two': 2, 'three': 3}, param_b=[0, 1, 2, 3])
+@script.register(param_a={"one": 1, "two": 2, "three": 3}, param_b=[0, 1, 2, 3])
 def test_func(param_a: int = 0, param_b: int = 5):
     """
     Some fancy docstring describing the function.
@@ -19,7 +17,7 @@ def test_func(param_a: int = 0, param_b: int = 5):
     :param param_b: Another parameter
     :return: Nothing
     """
-    print(f'a: {param_a}, b: {param_b}')
+    print(f"a: {param_a}, b: {param_b}")
 
 
 @script.register()
@@ -38,8 +36,8 @@ def list_func(opt_arg: list[str] = ("one", "two", "three")):
     Takes all command line arguments and prints them!
     :param opt_arg: A list of strings to print
     """
-    print(','.join(opt_arg))
+    print(",".join(opt_arg))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     script.run()

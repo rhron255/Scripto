@@ -5,11 +5,12 @@ An example script with two modes of operation:
 
 Try running the script yourself to see the help message generated!
 """
+
 import json
 
 from scripto.app import Scripto
 
-script = Scripto('JSONify')
+script = Scripto("JSONify")
 
 
 @script.register()
@@ -21,9 +22,9 @@ def prettify(path: str, indent: int = 4):
     :return: None
     """
     data = []
-    with open(path, 'r') as file:
+    with open(path, "r") as file:
         data = json.load(file)
-    with open(path, 'w') as file:
+    with open(path, "w") as file:
         json.dump(data, file, indent=indent)
 
 
@@ -35,11 +36,11 @@ def minify(path: str):
     :return: None
     """
     data = []
-    with open(path, 'r') as file:
+    with open(path, "r") as file:
         data = json.load(file)
-    with open(path, 'w') as file:
+    with open(path, "w") as file:
         json.dump(data, file)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     script.run()

@@ -17,7 +17,7 @@ def get_description(func: FunctionType) -> str:
     """
     docstring = get_escaped_docstring(func)
     if docstring is not None:
-        doc_end = docstring.find('\n:')
+        doc_end = docstring.find("\n:")
         if doc_end == -1:
             return docstring
         return docstring[:doc_end].strip()
@@ -26,7 +26,7 @@ def get_description(func: FunctionType) -> str:
 def get_escaped_docstring(func):
     doc = inspect.getdoc(func)
     if doc:
-        return doc.replace('%', '%%')
+        return doc.replace("%", "%%")
     return None
 
 
@@ -43,18 +43,22 @@ def get_parameters(func: FunctionType) -> List[Dict]:
     for param in signature.parameters.values():
         result = None
         if docstring:
-            result = re.compile(f':param {param.name}:\s*(?P<desc>.*)\s*:param').search(
-                docstring.replace('\n', ''))
+            result = re.compile(f":param {param.name}:\s*(?P<desc>.*)\s*:param").search(
+                docstring.replace("\n", "")
+            )
             if result is None:
-                result = re.compile(f':param {param.name}:\s*(?P<desc>.*)\s*:return').search(
-                    docstring.replace('\n', ''))
+                result = re.compile(
+                    f":param {param.name}:\s*(?P<desc>.*)\s*:return"
+                ).search(docstring.replace("\n", ""))
         parameter = {
-            'name': param.name,
-            'type': param.annotation if param.annotation != inspect.Parameter.empty else str,
-            'description': result.groupdict()['desc'] if result is not None else ''
+            "name": param.name,
+            "type": (
+                param.annotation if param.annotation != inspect.Parameter.empty else str
+            ),
+            "description": result.groupdict()["desc"] if result is not None else "",
         }
         if param.default is not inspect.Parameter.empty:
-            parameter['default'] = param.default
+            parameter["default"] = param.default
         parameters.append(parameter)
     return parameters
 
@@ -65,10 +69,10 @@ def make_kebab_case(string: str) -> str:
     :param string: The string to convert.
     :return: A kebab case formatted string
     """
-    return string.lower().replace(' ', '-').replace('_', '-')
+    return string.lower().replace(" ", "-").replace("_", "-")
 
 
-def get_first_doc_sentence(func) -> str:
+def get_first_doc_sentence(func) -> str | None:
     """
     Returns the first sentence of the documentation.
     :param func: The function to retrieve the documentation from.
@@ -76,35 +80,41 @@ def get_first_doc_sentence(func) -> str:
     """
     description = get_description(func)
     if description:
-        return description.split('.')[0] if '.' in description else description
+        return description.split(".")[0] if "." in description else description
     return None
 
 
-def validate_parameters_in_docstring(func: FunctionType, supress_warnings=False) -> None:
+def validate_parameters_in_docstring(
+    func: FunctionType, suppress_warnings=False
+) -> None:
     """
     Validates that all parameters in the function signature have type annotations (imperative to core functionality).
     Also, raises warnings if the documentation cannot be parsed into an appropriate description.
     :param func: The function to validate.
-    :param supress_warnings: Whether to supress the generated warnings.
+    :param suppress_warnings: Whether to supress the generated warnings.
     :return: None
     """
     signature = inspect.signature(func)
     docstring = get_escaped_docstring(func)
     for param in signature.parameters.values():
         if docstring:
-            result = re.compile(f':param {param.name}:\s*(?P<desc>.*)\s*:param').search(
-                docstring.replace('\n', ''))
+            result = re.compile(f":param {param.name}:\s*(?P<desc>.*)\s*:param").search(
+                docstring.replace("\n", "")
+            )
             if result is None:
-                result = re.compile(f':param {param.name}:\s*(?P<desc>.*)\s*:return').search(
-                    docstring.replace('\n', ''))
-                if result is None and not supress_warnings:
+                result = re.compile(
+                    f":param {param.name}:\s*(?P<desc>.*)\s*:return"
+                ).search(docstring.replace("\n", ""))
+                if result is None and not suppress_warnings:
                     warnings.warn(
                         f'Documentation not sufficient to parse description for parameter: "{param.name}" in function: "{func.__name__}".',
-                        stacklevel=3)
-        if param.annotation is inspect.Parameter.empty and not supress_warnings:
+                        stacklevel=3,
+                    )
+        if param.annotation is inspect.Parameter.empty and not suppress_warnings:
             warnings.warn(
                 f'No type annotations for: "{param.name}" in function: "{func.__name__}", may result in unexpected beavhiour.',
-                stacklevel=3)
+                stacklevel=3,
+            )
             # raise TypeError(
             #     f'No type annotation found for parameter: "{param.name}" in function: "{func.__name__}".')
 
