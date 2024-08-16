@@ -39,5 +39,14 @@ def list_func(opt_arg: list[str] = ("one", "two", "three")):
     print(",".join(opt_arg))
 
 
+@script.register(text={"hello world", "foo", "bar"})
+def set_func(text: str):
+    """
+    Prints the text provided.
+    :param text: The text to print
+    """
+    print(text)
+
+
 if __name__ == "__main__":
     script.run()
