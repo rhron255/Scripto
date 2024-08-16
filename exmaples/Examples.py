@@ -31,8 +31,9 @@ def bool_func(super_long_parameter_name: bool):
     """
     print("success" if super_long_parameter_name else "failure")
 
+
 @script.register()
-def list_func(opt_arg: list[str]):
+def list_func(opt_arg: list[str] = ("one", "two", "three")):
     """
     Takes all command line arguments and prints them!
     :param opt_arg: A list of strings to print
