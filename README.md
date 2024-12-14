@@ -5,6 +5,7 @@
 ![Python Version from PEP 621 TOML](https://img.shields.io/python/required-version-toml?tomlFilePath=https%3A%2F%2Fraw.githubusercontent.com%2Frhron255%2Fscripto%2Fmain%2Fpyproject.toml)
 ![PyPI - Version](https://img.shields.io/pypi/v/scripto)
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/scripto)
+[![PyPI Total Downloads](https://static.pepy.tech/badge/scripto)](https://pepy.tech/projects/scripto)
 
 Are you sick of writing long and annoying argparse initialization code?
 Worry no more - the future is here!
