@@ -43,19 +43,19 @@ def get_parameters(func: FunctionType) -> List[Dict]:
     for param in signature.parameters.values():
         result = None
         if docstring:
-            result = re.compile(f":param {param.name}:\s*(?P<desc>.*)\s*:param").search(
-                docstring.replace("\n", "")
+            # Update regex to handle multi-line parameter descriptions
+            result = re.search(
+                rf":param {param.name}:\s*(?P<desc>.*?)(?=\n\s*:\w|\Z)",
+                # Stops at the next directive or end-of-docstring
+                docstring,
+                flags=re.DOTALL,
             )
-            if result is None:
-                result = re.compile(
-                    f":param {param.name}:\s*(?P<desc>.*)\s*:return"
-                ).search(docstring.replace("\n", ""))
         parameter = {
             "name": param.name,
             "type": (
                 param.annotation if param.annotation != inspect.Parameter.empty else str
             ),
-            "description": result.groupdict()["desc"] if result is not None else "",
+            "description": result.group("desc").strip() if result is not None else "",
         }
         if param.default is not inspect.Parameter.empty:
             parameter["default"] = param.default
@@ -91,32 +91,31 @@ def validate_parameters_in_docstring(
     Validates that all parameters in the function signature have type annotations (imperative to core functionality).
     Also, raises warnings if the documentation cannot be parsed into an appropriate description.
     :param func: The function to validate.
-    :param suppress_warnings: Whether to supress the generated warnings.
+    :param suppress_warnings: Whether to suppress the generated warnings.
     :return: None
     """
     signature = inspect.signature(func)
     docstring = get_escaped_docstring(func)
+
     for param in signature.parameters.values():
         if docstring:
-            result = re.compile(f":param {param.name}:\s*(?P<desc>.*)\s*:param").search(
-                docstring.replace("\n", "")
+            # Updated regex to correctly handle multi-line descriptions and stop at the next directive
+            result = re.search(
+                rf":param {param.name}:\s*(?P<desc>.*?)(?=\n\s*:\w|\Z)",
+                # Stops at the next directive or end of docstring
+                docstring,
+                flags=re.DOTALL,
             )
-            if result is None:
-                result = re.compile(
-                    f":param {param.name}:\s*(?P<desc>.*)\s*:return"
-                ).search(docstring.replace("\n", ""))
-                if result is None and not suppress_warnings:
-                    warnings.warn(
-                        f'Documentation not sufficient to parse description for parameter: "{param.name}" in function: "{func.__name__}".',
-                        stacklevel=3,
-                    )
+            if result is None and not suppress_warnings:
+                warnings.warn(
+                    f'Documentation not sufficient to parse description for parameter: "{param.name}" in function: "{func.__name__}".',
+                    stacklevel=3,
+                )
         if param.annotation is inspect.Parameter.empty and not suppress_warnings:
             warnings.warn(
-                f'No type annotations for: "{param.name}" in function: "{func.__name__}", may result in unexpected beavhiour.',
+                f'No type annotations for: "{param.name}" in function: "{func.__name__}", may result in unexpected behaviour.',
                 stacklevel=3,
             )
-            # raise TypeError(
-            #     f'No type annotation found for parameter: "{param.name}" in function: "{func.__name__}".')
 
 
 def get_argument_names(func: FunctionType) -> List[str]:
