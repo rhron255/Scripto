@@ -115,7 +115,7 @@ class Scripto:
                 if isinstance(argument_values, dict):
                     parser.description += f'\n\t{target_name} - {settings["help"]}'
                     should_be_required = True
-                    if settings.get("default") not in argument_values.values():
+                    if settings.get("default") and settings.get("default") not in argument_values.values():
                         should_be_required = False
                         parser.set_defaults(**{f"{target_name}": settings["default"]})
                         argument_values[target_name] = settings["default"]
@@ -132,7 +132,7 @@ class Scripto:
                             help=f"Sets {target_name} to {value[1]}",
                         )
                 elif isinstance(argument_values, list):
-                    if settings.get("default") not in argument_values:
+                    if settings.get("default") and settings.get("default") not in argument_values:
                         argument_values.append(settings["default"])
                     if isinstance(name, list):
                         parser.add_argument(
