@@ -64,14 +64,23 @@ class Scripto:
             sub = parser.add_subparsers(required=False)
             for func_data in self._functions:
                 name, settings = generate_parser_definitions(func_data.func())
-                sub_parser = sub.add_parser(
-                    name if func_data.name is None else func_data.name,
-                    **settings,
-                    conflict_handler="resolve",
-                    formatter_class=argparse.RawDescriptionHelpFormatter,
-                )
-                self.add_function_to_parser(func_data.func(), sub_parser)
-
+                if func_data.aliases is None:
+                    sub_parser = sub.add_parser(
+                        name if func_data.name is None else func_data.name,
+                        **settings,
+                        conflict_handler="resolve",
+                        formatter_class=argparse.RawDescriptionHelpFormatter,
+                    )
+                    self.add_function_to_parser(func_data.func(), sub_parser)
+                else:
+                    sub_parser = sub.add_parser(
+                        name if func_data.name is None else func_data.name,
+                        **settings,
+                        conflict_handler="resolve",
+                        formatter_class=argparse.RawDescriptionHelpFormatter,
+                        aliases=func_data.aliases,
+                    )
+                    self.add_function_to_parser(func_data.func(), sub_parser)
         # Parsing the arguments passed to the program.
         args = parser.parse_args()
         func_args = {**vars(args)}
@@ -142,7 +151,7 @@ class Scripto:
             add_logging_flags(parser)
         parser.set_defaults(func=func)
 
-    def register(self, /, name=None, **config_kwargs):
+    def register(self, /, name=None, aliases: list[str] = None, **config_kwargs):
         """
         A function for registering new function in your script.
         A parameter with a name as any argument your function takes will be consumed in the following manner:
@@ -152,6 +161,7 @@ class Scripto:
 
          In both cases, the defaults set in the signature are also included in the enforced values.
         :param name: An override for the name to expose the function to the CLI with.
+        :param aliases: Possible aliases for the function.
         :param config_kwargs:
         :return:
         """
@@ -165,7 +175,7 @@ class Scripto:
                 validate_parameters_in_docstring(func, self._silence)
             except TypeError as e:
                 raise e
-            self._functions.append(FunctionData(func, name))
+            self._functions.append(FunctionData(func, name, aliases))
             self._arg_initializers[func.__name__] = dict(
                 config_arg
                 for config_arg in config_kwargs.items()
