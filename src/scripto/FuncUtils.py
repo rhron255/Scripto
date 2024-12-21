@@ -21,6 +21,7 @@ def get_description(func: FunctionType) -> str:
         if doc_end == -1:
             return docstring
         return docstring[:doc_end].strip()
+    return ""
 
 
 def get_escaped_docstring(func):
@@ -111,6 +112,11 @@ def validate_parameters_in_docstring(
                     f'Documentation not sufficient to parse description for parameter: "{param.name}" in function: "{func.__name__}".',
                     stacklevel=3,
                 )
+        else:
+            warnings.warn(
+                f'No documentation for function: "{func.__name__}", no description will be generated.',
+                stacklevel=3,
+            )
         if param.annotation is inspect.Parameter.empty and not suppress_warnings:
             warnings.warn(
                 f'No type annotations for: "{param.name}" in function: "{func.__name__}", may result in unexpected behaviour.',
