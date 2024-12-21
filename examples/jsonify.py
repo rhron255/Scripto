@@ -35,7 +35,7 @@ def minify(path: str):
     :param path: The path to the file.
     :return: None
     """
-    data = []
+    data = None
     with open(path, "r") as file:
         data = json.load(file)
     with open(path, "w") as file:
