@@ -21,6 +21,8 @@ from scripto.FuncUtils import (
     make_kebab_case,
 )
 
+from scripto.FunctionData import FunctionData
+
 
 class Scripto:
     """
@@ -29,7 +31,7 @@ class Scripto:
 
     _description: str
     _silence: bool
-    _functions: List[FunctionType] = []
+    _functions: List[FunctionData] = []
     _arg_initializers = {}
     _use_logger = False
 
@@ -52,7 +54,7 @@ class Scripto:
             raise ValueError("No functions registered...")
         if len(self._functions) == 1:
             function = self._functions[0]
-            self.add_function_to_parser(function, parser)
+            self.add_function_to_parser(function.func(), parser)
         else:
             # Handling a weird edge case where when nothing is passed, part 1.
             # You can look up this error:
@@ -60,15 +62,15 @@ class Scripto:
             # There's all sorts of stuff about this online - setting this to false and handling the
             #  lack of parameters seems like the best workaround for now
             sub = parser.add_subparsers(required=False)
-            for func in self._functions:
-                name, settings = generate_parser_definitions(func)
+            for func_data in self._functions:
+                name, settings = generate_parser_definitions(func_data.func())
                 sub_parser = sub.add_parser(
-                    name,
+                    name if func_data.name is None else func_data.name,
                     **settings,
                     conflict_handler="resolve",
                     formatter_class=argparse.RawDescriptionHelpFormatter,
                 )
-                self.add_function_to_parser(func, sub_parser)
+                self.add_function_to_parser(func_data.func(), sub_parser)
 
         # Parsing the arguments passed to the program.
         args = parser.parse_args()
@@ -140,14 +142,16 @@ class Scripto:
             add_logging_flags(parser)
         parser.set_defaults(func=func)
 
-    def register(self, /, **config_kwargs):
+    def register(self, /, name=None, **config_kwargs):
         """
         A function for registering new function in your script.
-        A parameter with a name as any argument your function takes will be consumed in the
-         following manner:
-         - If a list, will use the list to enforce a set of values.
-         - If a dict, will use the dict to build a set of flags to set those values.
+        A parameter with a name as any argument your function takes will be consumed in the following manner:
+
+        - If a list, will use the list to enforce a set of values.
+        - If a dict, will use the dict to build a set of flags to set those values.
+
          In both cases, the defaults set in the signature are also included in the enforced values.
+        :param name: An override for the name to expose the function to the CLI with.
         :param config_kwargs:
         :return:
         """
@@ -161,7 +165,7 @@ class Scripto:
                 validate_parameters_in_docstring(func, self._silence)
             except TypeError as e:
                 raise e
-            self._functions.append(func)
+            self._functions.append(FunctionData(func, name))
             self._arg_initializers[func.__name__] = dict(
                 config_arg
                 for config_arg in config_kwargs.items()
