@@ -52,7 +52,7 @@ to effortlessly generate a feature-rich command-line interface.
 
 ## Complex Examples
 
-See the [example](https://github.com/rhron255/Scripto/tree/main/exmaples) scripts provided.
+See the [example](https://github.com/rhron255/Scripto/tree/main/examples) scripts provided.
 
 ## Module Wrapping
 
