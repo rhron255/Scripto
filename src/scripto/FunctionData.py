@@ -8,10 +8,14 @@ class FunctionData:
 
     function: FunctionType
     name: str
+    aliases: list[str]
 
-    def __init__(self, function: FunctionType, name: str = None):
+    def __init__(
+        self, function: FunctionType, name: str = None, aliases: list[str] = None
+    ):
         self.function = function
         self.name = name
+        self.aliases = aliases
 
     def func(self) -> FunctionType:
         # noinspection PyTypeChecker

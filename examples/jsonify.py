@@ -13,7 +13,7 @@ from scripto.app import Scripto
 script = Scripto("JSONify")
 
 
-@script.register(name="format")
+@script.register(name="format", aliases=["fmt", "f"])
 def prettify(path: str, indent: int = 4):
     """
     Reads a JSON file, and re-indents it.
