@@ -31,14 +31,17 @@ class Scripto:
 
     _description: str
     _silence: bool
-    _functions: List[FunctionData] = []
-    _arg_initializers = {}
-    _use_logger = False
+    _functions: List[FunctionData]
+    _arg_initializers: dict
+    _use_logger: bool
 
     def __init__(self, description, suppress_warnings=False, auto_log=False):
         self._description = description
         self._silence = suppress_warnings
         self._use_logger = auto_log
+        self._functions = []
+        self._arg_initializers = {}
+
 
     def run(self) -> None:
         """
